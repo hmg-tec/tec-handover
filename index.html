@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TEC Shift Endorsement</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='16 12 128 132'%3E%3Cpath d='M32 128V40L80 92L128 40V128' fill='none' stroke='%2300605F' stroke-width='16' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M69 124L80 110L91 124' fill='none' stroke='%23C9A227' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#00605F; --gold:#00A9A5; --cream:#FFFFFF;
+  --ink:#1C2B2B; --muted:#6B7C7C; --line:#D9E4E4; --bg:#F2F7F7; --panel:#F7FBFB;
+  --ok:#0E8A6A; --pend:#B8860B; --red:#A33131;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:14px}
+button,input,select,textarea{font-family:inherit;font-size:14px;color:inherit}
+a{color:var(--green)}
+.wrap{max-width:960px;margin:0 auto;padding:18px 16px 72px}
+
+/* app bar */
+.appbar{background:var(--green);color:var(--cream);padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
+.appbar .t{font-size:15px;font-weight:600}
+.appbar .sp{margin-left:auto;font-size:12.5px;opacity:.85;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.appbar .lnk{color:var(--cream);background:rgba(255,255,255,.14);border:0;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12.5px}
+.logo{width:24px;height:24px;flex:none}
+
+/* generic */
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
+.card.hl{border-left:4px solid var(--gold);background:#F5FBFB}
+.card.locked{position:relative;overflow:hidden}
+.card.locked > *{filter:blur(1.5px);pointer-events:none;user-select:none}
+.card.locked .lockmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(242,247,247,.75);filter:none;pointer-events:auto;font-weight:500;color:var(--green);text-align:center;padding:20px}
+h2.sec{font-size:12px;color:var(--green);margin:22px 0 10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;display:flex;align-items:center;gap:8px}
+h2.sec:first-child{margin-top:4px}
+h2.sec small{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:12px}
+.muted{color:var(--muted);font-size:12.5px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grow{flex:1}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:3px 10px;border-radius:999px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.pill.pend{background:#FBF3DC;color:var(--pend)}
+.pill.ok{background:#E6F2EA;color:var(--ok)}
+.pill.late{background:#F8E7E7;color:var(--red)}
+.pill.info{background:#E4F2F2;color:var(--green)}
+.btn{font-weight:500;border:0;border-radius:8px;padding:10px 18px;cursor:pointer;background:var(--green);color:var(--cream)}
+.btn.g{background:var(--gold);color:#fff}
+.btn.o{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.btn.sm{padding:7px 12px;font-size:13px}
+.btn.danger{background:#fff;border:1px solid #E7C9C9;color:var(--red)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.fld{width:100%;border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:#fff}
+textarea.fld{min-height:80px;resize:vertical;line-height:1.6}
+.num{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px;width:110px;text-align:center;border:1px solid var(--line);border-radius:6px;padding:7px;background:#fff}
+label.l{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.tw{border:1px solid var(--line);border-radius:8px;overflow:auto;background:#fff}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--green);color:var(--cream);font-weight:500;font-size:11px;padding:9px 12px;text-align:left;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+tbody td{border-bottom:1px solid var(--line);padding:9px 12px;vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+td.mono,.mono{font-family:'IBM Plex Mono',monospace;font-weight:600}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.kv>div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+.kv .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.kv .v{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:18px;color:var(--green);margin-top:2px}
+.kv .v.txt{font-family:Inter,sans-serif;font-size:14px;font-weight:500}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 16px;cursor:pointer;font-weight:500}
+.chip small{display:block;font-weight:400;color:var(--muted);font-size:11.5px}
+.chip.on{background:var(--green);border-color:var(--green);color:var(--cream)}
+.chip.on small{color:rgba(255,255,255,.8)}
+.stepper{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.step{flex:1;min-width:120px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 12px;cursor:pointer;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px}
+.step .n{width:20px;height:20px;border-radius:50%;background:var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex:none}
+.step.on{border-color:var(--green);color:var(--green)}
+.step.on .n{background:var(--green);color:var(--cream)}
+.step.done .n{background:var(--ok);color:#fff}
+.flag{border:1px solid #E7C9C9;background:#FDF3F3;color:var(--red);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:10px}
+.okbox{border:1px solid #CFE6D8;background:#F0F8F3;color:var(--ok);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:10px}
+.note{border:1px solid var(--line);border-left:4px solid var(--gold);background:#fff;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.6;color:#3A4A4A;margin-bottom:12px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;cursor:pointer;font-size:13px}
+.tab.on{background:var(--green);border-color:var(--green);color:var(--cream)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.show{opacity:1}
+.hidden{display:none!important}
+body.busy .btn,body.busy .lnk,body.busy .chip{opacity:.55;pointer-events:none}
+body.busy::after{content:'';position:fixed;top:0;left:0;right:0;height:3px;background:var(--gold);animation:bar 1s linear infinite;z-index:10}
+@keyframes bar{0%{transform:scaleX(0);transform-origin:left}50%{transform:scaleX(1);transform-origin:left}51%{transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
+.eval{display:grid;grid-template-columns:1fr 90px;gap:6px 10px;align-items:center;font-size:13px}
+.eval .ar{font-size:11.5px;color:var(--muted)}
+.scale{display:flex;gap:4px}
+.scale button{width:30px;height:30px;border:1px solid var(--line);background:#fff;border-radius:6px;cursor:pointer;font-weight:600;font-size:12.5px}
+.scale button.on{background:var(--green);border-color:var(--green);color:#fff}
+
+/* sign in */
+.signin{max-width:400px;margin:56px auto 0;background:#fff;border:1px solid var(--line);border-radius:16px;padding:40px 30px;text-align:center}
+.signin .mark{width:56px;height:56px;margin:0 auto 14px}
+.signin h1{font-size:20px;color:var(--green);margin:0 0 4px;font-weight:700}
+.signin p{color:var(--muted);font-size:13px;margin:0 0 26px}
+.signin .f{text-align:left;margin-bottom:13px}
+.signin .btn{width:100%;margin-top:8px}
+.demo{margin-top:20px;font-size:12px;color:var(--muted);text-align:left}
+.demo code{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:11.5px}
+
+@media(max-width:640px){
+  .num{width:84px}
+  .eval{grid-template-columns:1fr}
+  .kv .v{font-size:16px}
+}
+</style>
+</head>
+<body>
+<svg style="display:none" aria-hidden="true">
+  <symbol id="ma-logo" viewBox="16 12 128 132">
+    <path d="M32 128V40L80 92L128 40V128" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M69 124L80 110L91 124" fill="none" stroke="#C9A227" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+</svg>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   TEC Shift Endorsement — single-file app
+   Backend: Google Apps Script + Google Sheets (Code.gs). All data lives in the sheet;
+   this page only caches what the signed-in user needs.
+   ===================================================================== */
+const API_URL = 'https://script.google.com/macros/s/AKfycbzx5AGGXWe6--hiOmdi9qwJOfDnRBWI-vxT0WyV3MFFX-_eCB3UILQtRsbDBvrtcR4I/exec';
+let GRACE_MIN = 30;           // replaced by Config.grace_minutes from the sheet after sign-in
+
+/* ---- Shifts: defaults only — replaced by the "Shifts" tab after sign-in ---- */
+let SHIFTS = [
+  { id:'DAY',   label:'Day',        start:'07:00', end:'19:00', overlap:false,
+    accepts:[{shift:'NIGHT',offset:-1},{shift:'OV12',offset:-1},{shift:'OV4',offset:-1}], next:{shift:'NIGHT',offset:0} },
+  { id:'NIGHT', label:'Night',      start:'19:00', end:'07:00', overlap:false,
+    accepts:[{shift:'DAY',offset:0}], next:{shift:'DAY',offset:1} },
+  { id:'OV12',  label:'Overlap 12', start:'12:00', end:'00:00', overlap:true,  accepts:[], next:{shift:'DAY',offset:1} },
+  { id:'OV4',   label:'Overlap 4',  start:'16:00', end:'04:00', overlap:true,  accepts:[], next:{shift:'DAY',offset:1} },
+];
+const ROLES = { CT:'Call Taker', RC:'Response Coordinator', SUP:'Supervisor', ADMIN:'Admin' };
+const FIELDS = {
+  CT:  [ {k:'cases',l:'Total cases'}, {k:'activated',l:'Cases activated to Response'}, {k:'pending',l:'Pending cases'}, {k:'needAct',l:'Cases needing activation'} ],
+  RC:  [ {k:'fromCT',l:'Cases received from Call Taker'}, {k:'during',l:'Cases during the shift'}, {k:'unitsReady',l:'Units ready and available'}, {k:'unitsBusy',l:'Units busy outside'} ],
+  SUP: [ {k:'totalCalls',l:'Total Calls'}, {k:'serviceLevel',l:'Service Level'}, {k:'abandoned',l:'Abandoned'}, {k:'callDuration',l:'Call Duration',text:true}, {k:'pickup',l:'Pick up time of calls',text:true} ],
+};
+const EVAL_CATS = [
+  {k:'c1', en:'Communication professionalism', ar:'الاحترافية في التواصل'},
+  {k:'c2', en:'Attendance commitment',          ar:'الالتزام بالحضور'},
+  {k:'c3', en:'Work environment',               ar:'بيئة العمل'},
+  {k:'c4', en:'Data entry quality',             ar:'جودة إدخال البيانات'},
+  {k:'c5', en:'Periodic meetings',              ar:'الاجتماعات الدورية'},
+];
+const SCALE = {1:'Below average',2:'Average',3:'Excellent',4:'Perfect',5:'Beyond job description'};
+
+/* ---- helpers ---- */
+const $ = s => document.querySelector(s);
+const h = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2,'0');
+const shiftOf = id => SHIFTS.find(s=>s.id===id);
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function dateKey(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }         // local, never toISOString
+function parseKey(k){ const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d); }
+function addDays(k,n){ const d=parseKey(k); d.setDate(d.getDate()+n); return dateKey(d); }
+function fmtDate(k){ const [y,m,d]=k.split('-'); return d+'/'+m+'/'+y; }
+function fmtTime(iso){ const d=new Date(iso); return pad(d.getHours())+':'+pad(d.getMinutes()); }
+function fmtDT(iso){ const d=new Date(iso); return fmtDate(dateKey(d))+' '+fmtTime(iso); }
+function mins(t){ const [hh,mm]=t.split(':').map(Number); return hh*60+mm; }
+function crosses(s){ return mins(s.end) <= mins(s.start); }
+function shiftWindow(s, key){
+  const st = parseKey(key); st.setHours(...s.start.split(':').map(Number),0,0);
+  const en = parseKey(crosses(s)?addDays(key,1):key); en.setHours(...s.end.split(':').map(Number),0,0);
+  return {start:st, end:en};
+}
+/* the "shift date" = the date the shift started. Night 19:00 13/09 submitted 07:10 14/09 → 13/09 */
+function currentShiftDate(s, now){
+  const t = now.getHours()*60+now.getMinutes();
+  if (crosses(s) && t < mins(s.end)+GRACE_MIN) return addDays(dateKey(now),-1);
+  return dateKey(now);
+}
+function isOnTime(s, key, iso){ const w=shiftWindow(s,key); return new Date(iso).getTime() <= w.end.getTime()+GRACE_MIN*60000; }
+function suggestShift(now){
+  for (const s of SHIFTS.filter(x=>!x.overlap)){
+    const w=shiftWindow(s, currentShiftDate(s,now));
+    if (now>=w.start && now.getTime()<=w.end.getTime()+GRACE_MIN*60000) return s.id;
+  }
+  return 'DAY';
+}
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._x); t._x=setTimeout(()=>t.classList.remove('show'),2200); }
+function sum(arr,k){ return arr.reduce((a,r)=>a+(Number(r.data&&r.data[k])||0),0); }
+
+/* ---- data: in-memory cache filled from the Apps Script backend ---- */
+const DB = { d:{ users:[], reports:[], rosters:[], evals:[] } };
+let BUSY=false;
+function setBusy(b){ BUSY=b; document.body.classList.toggle('busy',b); }
+async function api(action, payload){
+  const body=Object.assign({action}, S.user?{username:S.user.u, token:S.token}:{}, payload||{});
+  const res=await fetch(API_URL,{method:'POST', body:JSON.stringify(body), redirect:'follow'});
+  let j; try{ j=await res.json(); }catch(e){ throw new Error('Server did not answer as expected — check the deployment access is set to "Anyone".'); }
+  if(!j.ok) throw new Error(j.error||'Request failed');
+  return j;
+}
+function applyConfig(j){
+  if(j.shifts&&j.shifts.length) SHIFTS=j.shifts;
+  if(j.config&&j.config.grace_minutes) GRACE_MIN=Number(j.config.grace_minutes)||30;
+}
+/* reload everything this role needs (called after sign-in, after every write, on refresh) */
+async function reload(){
+  if(!S.user) return;
+  setBusy(true);
+  try{
+    const j = S.user.role==='ADMIN' ? await api('admin',{days:60}) : await api('bootstrap',{days:3});
+    applyConfig(j);
+    DB.d = { users:j.users||[], reports:j.reports||[], rosters:j.rosters||[], evals:j.evals||[], accepts:j.accepts||[] };
+    DB.at = new Date();
+  } catch(e){ toast(e.message); }
+  finally{ setBusy(false); render(); }
+}
+async function write(action, payload, okMsg){
+  setBusy(true);
+  try{ await api(action,payload); toast(okMsg||'Saved'); await reload(); return true; }
+  catch(e){ toast(e.message); setBusy(false); render(); return false; }
+}
+
+/* ---- session ---- */
+const S = { user:null, token:null, mustChange:false, shift:null, shiftDate:null, supStep:1, adminTab:'reports' };
+function loadSession(){ try{ const j=JSON.parse(localStorage.getItem('tec_sess')); if(j){ Object.assign(S,j); } }catch(e){} }
+function saveSession(){ try{ localStorage.setItem('tec_sess', JSON.stringify({user:S.user,token:S.token,mustChange:S.mustChange,shift:S.shift,shiftDate:S.shiftDate,supStep:S.supStep,adminTab:S.adminTab})); }catch(e){} }
+
+/* ---- queries ---- */
+const R = () => DB.d.reports;
+function prevReports(role, shiftId, key){
+  const s=shiftOf(shiftId); const out=[];
+  for (const a of s.accepts){ const k=addDays(key,a.offset); out.push(...R().filter(r=>r.role===role && r.shift===a.shift && r.shiftDate===k)); }
+  return out.sort((a,b)=>a.submittedAt.localeCompare(b.submittedAt));
+}
+/* late reports are not part of the handover: not offered for acceptance, marked "Late — not seen" */
+function splitPrev(role, shiftId, key){ const all=prevReports(role,shiftId,key); return {ok:all.filter(r=>r.onTime), late:all.filter(r=>!r.onTime)}; }
+/* what a given user accepted for a given shift — derived, never duplicated */
+function acceptedPrevBy(u, role, shiftId, key){ return prevReports(role,shiftId,key).filter(r=>r.accepts.some(a=>a.u===u)).map(r=>({r, at:r.accepts.find(a=>a.u===u).at})); }
+function acksOf(r){ return r.acks||[]; }
+function ackedBy(r,u){ return acksOf(r).some(a=>a.u===u); }
+function statusOf(r){ if(r.onTime) return {cls:'ok',txt:'On time'}; return acksOf(r).length? {cls:'late',txt:'Late — acknowledged'} : {cls:'late',txt:'Late — not seen'}; }
+/* "Night 16/09/2026 (Mohannad Awaji, Ragad) total 11/10/2/0 at 07:12" */
+function acceptedFromLine(u, role, shiftId, key){
+  const ap=acceptedPrevBy(u,role,shiftId,key); if(!ap.length) return '';
+  const nf=FIELDS[role].filter(x=>!x.text); const tot=nf.map(x=>sum(ap.map(a=>a.r),x.k)).join('/');
+  const at=ap.map(a=>a.at).sort().pop(); const g={};
+  ap.forEach(a=>{ const k=shiftOf(a.r.shift).label+' '+fmtDate(a.r.shiftDate); (g[k]=g[k]||[]).push(a.r.name); });
+  return Object.keys(g).map(k=>k+' ('+g[k].map(h).join(', ')+')').join(' + ')+' · total '+tot+' · at '+fmtTime(at);
+}
+function myReport(){ return R().find(r=>r.u===S.user.u && r.shift===S.shift && r.shiftDate===S.shiftDate); }
+function rosterFor(shiftId,key){ return DB.d.rosters.find(r=>r.shift===shiftId && r.shiftDate===key); }
+function expectedAcceptors(rep){
+  const s=shiftOf(rep.shift); const n=s.next; const ro=rosterFor(n.shift, addDays(rep.shiftDate,n.offset));
+  if(!ro) return null;
+  return ro.members.filter(m=>m.role===rep.role && m.shift===n.shift).map(m=>m.name);
+}
+function acceptedBy(rep,u){ return rep.accepts.some(a=>a.u===u); }
+function comparison(shiftId,key){
+  const ct = R().filter(r=>r.role==='CT'&&r.shift===shiftId&&r.shiftDate===key);
+  const rc = R().filter(r=>r.role==='RC'&&r.shift===shiftId&&r.shiftDate===key);
+  const ov = R().filter(r=>r.role==='CT'&&shiftOf(r.shift).overlap&&r.shiftDate===key);
+  const ctSum=sum(ct,'activated'), rcSum=sum(rc,'fromCT');
+  return {ct,rc,ov,ctSum,rcSum, flag: ct.length&&rc.length&&ctSum!==rcSum};
+}
+
+/* ---- render ---- */
+function render(){
+  const app=$('#app');
+  if(!S.user){ app.innerHTML=viewSignIn(); return; }
+  if(S.mustChange){ app.innerHTML=viewChangePassword(); return; }
+  if(!DB.at){ app.innerHTML=viewAppBar()+'<div class="wrap"><div class="card"><span class="muted">Loading…</span></div></div>'; return; }
+  if(S.user.role!=='ADMIN' && !S.shift){ app.innerHTML=viewAppBar()+'<div class="wrap">'+viewShiftPick()+'</div>'; return; }
+  let body='';
+  if(S.user.role==='CT'||S.user.role==='RC') body=viewStaff();
+  else if(S.user.role==='SUP') body=viewSup();
+  else body=viewAdmin();
+  app.innerHTML=viewAppBar()+'<div class="wrap">'+body+'</div>';
+}
+function logoSvg(cls,color){ return '<svg class="'+cls+'" style="color:'+color+'"><use href="#ma-logo"/></svg>'; }
+
+function viewSignIn(){
+  return '<div class="wrap"><div class="signin">'+logoSvg('mark','var(--green)')+
+  '<h1>Shift Endorsement</h1><p>TEC — Emergency Communication Center</p>'+
+  '<div id="f-login"><div class="f"><label class="l">Username</label><input class="fld" id="in-u" name="u" autocomplete="username" autocapitalize="none" data-enter="login"></div>'+
+  '<div class="f"><label class="l">Password</label><input class="fld" id="in-p" type="password" name="p" autocomplete="current-password" data-enter="login"></div>'+
+  '<button class="btn" type="button" data-act="login">Sign In</button></div>'+
+  '<p class="muted" style="margin:18px 0 0">by MA Solution</p></div></div>';
+}
+function viewChangePassword(){
+  return '<div class="wrap"><div class="signin">'+logoSvg('mark','var(--green)')+
+  '<h1>Set your password</h1><p>First sign-in for '+h(S.user.name)+' — choose a new password.</p>'+
+  '<div class="f"><label class="l">New password</label><input class="fld" id="np1" type="password" autocomplete="new-password" data-enter="chpw"></div>'+
+  '<div class="f"><label class="l">Repeat</label><input class="fld" id="np2" type="password" autocomplete="new-password" data-enter="chpw"></div>'+
+  '<button class="btn" type="button" data-act="chpw">Save password</button>'+
+  '<button class="btn o" type="button" style="margin-top:8px" data-act="logout">Cancel</button></div></div>';
+}
+function viewAppBar(){
+  const s=S.shift?shiftOf(S.shift):null;
+  return '<div class="appbar">'+logoSvg('logo','var(--cream)')+'<span class="t">Shift Endorsement</span>'+
+  '<span class="sp">'+h(S.user.name)+' · '+ROLES[S.user.role]+(s?' · '+h(s.label)+' '+fmtDate(S.shiftDate)+' <button class="lnk" data-act="change-shift">Change</button>':'')+
+  ' <button class="lnk" data-act="refresh" title="Reload from the sheet">Refresh'+(DB.at?' · '+pad(DB.at.getHours())+':'+pad(DB.at.getMinutes()):'')+'</button>'+
+  ' <button class="lnk" data-act="logout">Sign out</button></span></div>';
+}
+function viewShiftPick(){
+  const now=new Date(); const sug=suggestShift(now);
+  return '<div class="card"><h2 class="sec">Which shift are you on?</h2><div class="chips">'+
+  SHIFTS.map(s=>'<button class="chip'+(s.id===sug?' on':'')+'" data-act="pick-shift" data-id="'+s.id+'">'+h(s.label)+'<small>'+s.start+' – '+s.end+'</small></button>').join('')+
+  '</div><p class="muted" style="margin:12px 0 0">Suggested from the current time. Shift names and hours come from the Shifts configuration.</p></div>';
+}
+
+/* ---- CT / RC page ---- */
+function reportCard(r, opts){
+  opts=opts||{}; const s=shiftOf(r.shift); const f=FIELDS[r.role];
+  const exp=opts.showWaiting? expectedAcceptors(r) : null;
+  const accepted=r.accepts.map(a=>h(a.name)+' '+fmtTime(a.at)+(a.note?' <span class="muted">— '+h(a.note)+'</span>':'')).join(' · ');
+  const acked=acksOf(r).map(a=>h(a.name)+' '+fmtTime(a.at)+(a.note?' <span class="muted">— '+h(a.note)+'</span>':'')).join(' · ');
+  const waiting = exp? exp.filter(n=>!r.accepts.some(a=>a.name===n)) : null;
+  const mine = S.user && ackedBy(r,S.user.u);
+  const st=statusOf(r);
+  let html='<div class="card'+(opts.hl&&!mine?' hl':'')+'">';
+  html+='<div class="row" style="margin-bottom:10px"><strong>'+h(r.name)+'</strong><span class="muted">'+h(s.label)+' · '+fmtDate(r.shiftDate)+' · submitted '+fmtTime(r.submittedAt)+'</span>'+
+        '<span class="pill '+st.cls+'">'+st.txt+'</span></div>';
+  html+='<div class="kv">'+f.map(x=>'<div><div class="k">'+h(x.l)+'</div><div class="v'+(x.text?' txt':'')+'">'+h(r.data[x.k])+'</div></div>').join('')+'</div>';
+  if(r.problems&&r.problems.length) html+='<div class="tw" style="margin-top:10px"><table><thead><tr><th>Problem</th><th>Action taken or required</th></tr></thead><tbody>'+
+     r.problems.map(p=>'<tr><td>'+h(p.problem)+'</td><td>'+h(p.action)+'</td></tr>').join('')+'</tbody></table></div>';
+  if(r.notes) html+='<div style="margin-top:10px;padding:9px 11px;background:var(--panel);border:1px solid var(--line);border-radius:8px">'+h(r.notes)+'</div>';
+  if(!r.onTime){
+    html+='<div class="muted" style="margin-top:10px;color:var(--red)">Late submission — not part of the handover total.'+(acked?' Acknowledged by: '+acked:' Not acknowledged yet.')+'</div>';
+    if(opts.ackable && !mine) html+='<div class="row" style="margin-top:12px"><input class="fld grow" placeholder="Note (optional)" data-note="'+r.id+'"><button class="btn o sm" data-act="ack" data-id="'+r.id+'">Acknowledge</button></div>';
+    else if(opts.ackable && mine) html+='<div class="okbox" style="margin:10px 0 0">You acknowledged this at '+fmtTime(acksOf(r).find(a=>a.u===S.user.u).at)+'.</div>';
+  } else {
+    html+='<div class="muted" style="margin-top:10px">Accepted by: '+(accepted||'—')+
+        (waiting? (waiting.length?' &nbsp;·&nbsp; <span style="color:var(--pend)">Waiting: '+waiting.map(h).join(', ')+'</span>':' &nbsp;·&nbsp; <span style="color:var(--ok)">All accepted</span>') : '')+'</div>';
+  }
+  const af=acceptedFromLine(r.u, r.role, r.shift, r.shiftDate);
+  if(af) html+='<div class="muted" style="margin-top:6px">Accepted from previous shift: '+af+'</div>';
+  return html+'</div>';
+}
+/* previous shift as ONE card: total + one line per person + their problems + one Accept */
+function handoverCard(prev, role, opts){
+  const f=FIELDS[role].filter(x=>!x.text); const u=S.user.u;
+  const pending=prev.filter(r=>!acceptedBy(r,u)); const done=prev.filter(r=>acceptedBy(r,u));
+  let html='<div class="card'+(pending.length?' hl':'')+'"><div class="row" style="margin-bottom:10px"><strong>Total · '+prev.length+' report'+(prev.length>1?'s':'')+'</strong>'+
+    (pending.length?'<span class="pill pend">Waiting for your accept</span>':'<span class="pill ok">Accepted</span>')+'</div>';
+  html+='<div class="kv">'+f.map(x=>'<div><div class="k">'+h(x.l)+'</div><div class="v">'+sum(prev,x.k)+'</div></div>').join('')+'</div>';
+  html+='<div class="tw" style="margin-top:12px"><table><thead><tr><th>Name</th>'+f.map(x=>'<th style="text-align:center">'+h(x.l).replace('Cases ','').replace(' cases','')+'</th>').join('')+'<th>Submitted</th></tr></thead><tbody>'+
+    prev.map(r=>'<tr><td><strong>'+h(r.name)+'</strong><div class="muted">'+h(shiftOf(r.shift).label)+'</div></td>'+f.map(x=>'<td class="mono" style="text-align:center">'+h(r.data[x.k])+'</td>').join('')+'<td class="muted">'+fmtTime(r.submittedAt)+(r.accepts.length?'<br>accepted by '+r.accepts.map(a=>h(a.name)).join(', '):'')+'</td></tr>').join('')+'</tbody></table></div>';
+  const probs=prev.flatMap(r=>(r.problems||[]).filter(p=>p.problem||p.action).map(p=>({who:r.name,p})).concat(r.notes?[{who:r.name,p:{problem:r.notes,action:''}}]:[]));
+  if(probs.length) html+='<div class="tw" style="margin-top:10px"><table><thead><tr><th>From</th><th>Problem / note</th><th>Action taken or required</th></tr></thead><tbody>'+
+    probs.map(x=>'<tr><td>'+h(x.who)+'</td><td>'+h(x.p.problem)+'</td><td>'+h(x.p.action)+'</td></tr>').join('')+'</tbody></table></div>';
+  else html+='<div class="muted" style="margin-top:10px">No problems reported.</div>';
+  if(pending.length) html+='<div class="row" style="margin-top:14px"><input class="fld grow" id="accept-note" placeholder="Note (optional) — if something is unclear or does not match"><button class="btn g" data-act="accept-all" data-ids="'+pending.map(r=>r.id).join(',')+'" data-role="'+role+'">Accept</button></div>';
+  else html+='<div class="okbox" style="margin:12px 0 0">You accepted this at '+fmtTime(done.map(r=>r.accepts.find(a=>a.u===u).at).sort().pop())+'.</div>';
+  return html+'</div>';
+}
+function viewStaff(){
+  const s=shiftOf(S.shift); const role=S.user.role; const f=FIELDS[role];
+  let html='';
+  let pending=[];
+  if(!s.overlap){
+    const {ok:prev, late}=splitPrev(role,S.shift,S.shiftDate);
+    const which=s.accepts.map(a=>shiftOf(a.shift).label+' '+fmtDate(addDays(S.shiftDate,a.offset))).join(', ');
+    html+='<h2 class="sec">Previous shift — accept <small>'+h(which)+'</small></h2>';
+    if(!prev.length) html+='<div class="card"><span class="muted">Nothing submitted on time yet for '+h(which)+'. If it arrives later, press Refresh.</span></div>';
+    else html+=handoverCard(prev, role, {});
+    if(late.length){
+      html+='<h2 class="sec" style="color:var(--red)">Submitted late — not part of this handover <small>read and acknowledge</small></h2>'+late.map(r=>reportCard(r,{ackable:true,hl:true})).join('');
+    }
+    pending = prev.filter(r=>!acceptedBy(r,S.user.u)).concat(late.filter(r=>!ackedBy(r,S.user.u)));
+  } else {
+    html+='<h2 class="sec">Live — Smartsheet</h2><div class="card"><span class="muted">Not connected yet. When the Smartsheet link is added, today\'s case count will show here.</span></div>';
+  }
+  const mine=myReport();
+  html+='<h2 class="sec">My report <small>'+h(s.label)+' · '+fmtDate(S.shiftDate)+'</small></h2>';
+  if(mine){
+    html+='<div class="okbox">Submitted at '+fmtDT(mine.submittedAt)+' · '+(mine.onTime?'on time':'late')+'. It is now locked.</div>'+reportCard(mine,{});
+  } else {
+    html+='<div class="card'+(pending.length?' locked':'')+'">'+(pending.length?'<div class="lockmsg">Accept the previous shift first ('+pending.length+' waiting)</div>':'');
+    html+='<div class="tw"><table><thead><tr><th>Item</th><th style="width:140px">Count</th><th style="width:120px">Smartsheet</th></tr></thead><tbody>'+
+      f.map(x=>'<tr><td>'+h(x.l)+'</td><td>'+(x.text?'<input class="fld" data-f="'+x.k+'">':'<input class="num" type="number" min="0" inputmode="numeric" data-f="'+x.k+'">')+'</td><td class="muted">—</td></tr>').join('')+'</tbody></table></div>';
+    if(role==='CT'){
+      html+='<h2 class="sec">Problems faced by the Call Taker, other reasons or notes</h2><div class="tw"><table id="probs"><thead><tr><th style="width:50%">Problem</th><th>Action taken or required</th></tr></thead><tbody>'+
+        '<tr><td><input class="fld" data-p="problem"></td><td><input class="fld" data-p="action"></td></tr><tr><td><input class="fld" data-p="problem"></td><td><input class="fld" data-p="action"></td></tr></tbody></table></div>'+
+        '<button class="btn o sm" style="margin-top:8px" data-act="add-prob">+ Add row</button>';
+    } else {
+      html+='<h2 class="sec">Notes on cases or units, problems or other reasons</h2><textarea class="fld" id="rc-notes" placeholder="Status or action required"></textarea>';
+    }
+    html+='<div class="row" style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)"><button class="btn" data-act="submit-report">Submit report</button>'+
+          '<span class="muted">Submitting locks the report. Your name, shift and time are recorded automatically.</span></div></div>';
+  }
+  return html;
+}
+
+/* ---- Supervisor page ---- */
+function viewSup(){
+  const s=shiftOf(S.shift); const key=S.shiftDate;
+  const {ok:prev, late:prevLate}=splitPrev('SUP',S.shift,key);
+  const pending=prev.filter(r=>!acceptedBy(r,S.user.u)).concat(prevLate.filter(r=>!ackedBy(r,S.user.u)));
+  const roster=rosterFor(S.shift,key);
+  const mine=myReport();
+  const steps=[['Accept previous',!pending.length],['Roster',!!roster],['Review & evaluate',DB.d.evals.some(e=>e.shift===S.shift&&e.shiftDate===key)],['My numbers',!!mine]];
+  let html='<div class="stepper">'+steps.map((st,i)=>'<button class="step'+(S.supStep===i+1?' on':'')+(st[1]?' done':'')+'" data-act="sup-step" data-n="'+(i+1)+'"><span class="n">'+(i+1)+'</span>'+st[0]+'</button>').join('')+'</div>';
+  const which=s.accepts.map(a=>shiftOf(a.shift).label+' '+fmtDate(addDays(key,a.offset))).join(', ');
+
+  if(S.supStep===1){
+    html+='<h2 class="sec">Previous supervisor — accept <small>'+h(which)+'</small></h2>';
+    if(!prev.length) html+='<div class="card"><span class="muted">No supervisor report submitted on time for '+h(which)+'.</span></div>';
+    else html+=handoverCard(prev,'SUP',{});
+    if(prevLate.length) html+='<h2 class="sec" style="color:var(--red)">Submitted late — not part of this handover</h2>'+prevLate.map(r=>reportCard(r,{ackable:true,hl:true})).join('');
+    html+='<div class="row"><button class="btn" data-act="sup-step" data-n="2">Next → Roster</button></div>';
+  }
+  if(S.supStep===2){
+    const members=(roster?roster.members:[]).concat([{name:'',role:'CT',shift:S.shift}]);
+    const names=DB.d.users.filter(u=>u.role==='CT'||u.role==='RC').map(u=>'<option value="'+h(u.name)+'">').join('');
+    html+='<h2 class="sec">Roster <small>everyone on your shift, overlap staff included — you can come back and add any time</small></h2><datalist id="names">'+names+'</datalist>';
+    html+='<div class="card"><div class="tw"><table id="roster"><thead><tr><th>Name</th><th style="width:190px">Role</th><th style="width:150px">Shift</th><th style="width:40px"></th></tr></thead><tbody>'+
+      members.map(m=>'<tr><td><input class="fld" list="names" data-r="name" value="'+h(m.name)+'" placeholder="Name"></td><td><select class="fld" data-r="role">'+
+        ['CT','RC'].map(x=>'<option value="'+x+'"'+(m.role===x?' selected':'')+'>'+ROLES[x]+'</option>').join('')+'</select></td><td><select class="fld" data-r="shift">'+
+        SHIFTS.map(x=>'<option value="'+x.id+'"'+(m.shift===x.id?' selected':'')+'>'+h(x.label)+'</option>').join('')+'</select></td><td><button class="btn o sm" data-act="del-row" title="Remove">×</button></td></tr>').join('')+
+      '</tbody></table></div><div class="row" style="margin-top:10px"><button class="btn o sm" data-act="add-roster">+ Add person</button><span class="grow"></span><button class="btn" data-act="save-roster">Save roster</button></div></div>';
+    if(roster) html+='<div class="okbox">Roster saved · '+roster.members.length+' people.</div>';
+    html+='<div class="row"><button class="btn o" data-act="sup-step" data-n="1">← Back</button><button class="btn" data-act="sup-step" data-n="3">Next → Review</button></div>';
+  }
+  if(S.supStep===3){
+    const c=comparison(S.shift,key);
+    html+='<h2 class="sec">CT ↔ RC comparison <small>'+h(s.label)+' '+fmtDate(key)+'</small></h2><div class="card">';
+    html+= c.flag ? '<div class="flag">Mismatch: Call Takers report <b>'+c.ctSum+'</b> cases activated to Response, the Response Coordinator reports <b>'+c.rcSum+'</b> received. Flagged for review — nothing changed.</div>'
+         : (c.ct.length&&c.rc.length ? '<div class="okbox">Call Takers activated '+c.ctSum+' · Response received '+c.rcSum+' — match.</div>' : '<div class="muted" style="margin-bottom:8px">Comparison appears once both CT and RC reports for this shift are in.</div>');
+    html+='<div class="kv"><div><div class="k">CT activated ('+h(s.label)+')</div><div class="v">'+c.ctSum+'</div><div class="muted">'+(c.ct.map(r=>h(r.name)+' '+r.data.activated).join(' · ')||'—')+'</div></div>'+
+          '<div><div class="k">RC received from CT</div><div class="v">'+c.rcSum+'</div><div class="muted">'+(c.rc.map(r=>h(r.name)).join(' · ')||'—')+'</div></div>'+
+          '<div><div class="k">Overlap CT activated (separate)</div><div class="v">'+sum(c.ov,'activated')+'</div><div class="muted">'+(c.ov.map(r=>h(r.name)+' ('+shiftOf(r.shift).label+') '+r.data.activated).join(' · ')||'—')+'</div></div></div></div>';
+    html+='<h2 class="sec">Reports this shift</h2>';
+    const reps=c.ct.concat(c.rc,c.ov);
+    html+= reps.length? reps.map(r=>reportCard(r,{showWaiting:true})).join('') : '<div class="card"><span class="muted">No CT or RC reports submitted yet for this shift.</span></div>';
+    html+='<h2 class="sec">Evaluation <small>1 Below average · 2 Average · 3 Excellent · 4 Perfect · 5 Beyond job description</small></h2>';
+    if(!roster||!roster.members.length) html+='<div class="card"><span class="muted">Enter the roster first (step 2) to evaluate your staff.</span></div>';
+    else html+=roster.members.map(m=>{
+      const ev=DB.d.evals.find(e=>e.shift===S.shift&&e.shiftDate===key&&e.employee===m.name)||{scores:{},notes:''};
+      return '<div class="card" data-emp="'+h(m.name)+'"><div class="row" style="margin-bottom:10px"><strong>'+h(m.name)+'</strong><span class="muted">'+ROLES[m.role]+' · '+h(shiftOf(m.shift).label)+'</span>'+(ev.id?'<span class="pill ok">Saved</span>':'')+'</div><div class="eval">'+
+        EVAL_CATS.map(cat=>'<div>'+h(cat.en)+'<div class="ar">'+h(cat.ar)+'</div></div><div class="scale" data-cat="'+cat.k+'">'+[1,2,3,4,5].map(n=>'<button type="button" class="'+(ev.scores[cat.k]===n?'on':'')+'" data-act="score" data-n="'+n+'" title="'+SCALE[n]+'">'+n+'</button>').join('')+'</div>').join('')+
+        '</div><input class="fld" style="margin-top:10px" data-ev="notes" placeholder="Notes" value="'+h(ev.notes)+'"><div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn sm" data-act="save-eval" data-emp="'+h(m.name)+'">Save evaluation</button></div></div>';
+    }).join('');
+    html+='<div class="row"><button class="btn o" data-act="sup-step" data-n="2">← Back</button><button class="btn" data-act="sup-step" data-n="4">Next → My numbers</button></div>';
+  }
+  if(S.supStep===4){
+    html+='<h2 class="sec">My numbers <small>'+h(s.label)+' · '+fmtDate(key)+'</small></h2>';
+    if(mine) html+='<div class="okbox">Submitted at '+fmtDT(mine.submittedAt)+' · '+(mine.onTime?'on time':'late')+'. Locked.</div>'+reportCard(mine,{});
+    else html+='<div class="card'+(pending.length?' locked':'')+'">'+(pending.length?'<div class="lockmsg">Accept the previous supervisor first</div>':'')+
+      '<div class="tw"><table><thead><tr><th>Item</th><th style="width:160px">Value</th></tr></thead><tbody>'+FIELDS.SUP.map(x=>'<tr><td>'+h(x.l)+'</td><td>'+(x.text?'<input class="fld" data-f="'+x.k+'" placeholder="e.g. 2m3s">':'<input class="num" type="number" min="0" inputmode="numeric" data-f="'+x.k+'">')+'</td></tr>').join('')+'</tbody></table></div>'+
+      '<h2 class="sec">Shift summary for the next supervisor</h2><textarea class="fld" id="rc-notes" placeholder="General overview of the shift, anything left for the next shift"></textarea>'+
+      '<div class="row" style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)"><button class="btn" data-act="submit-report">Submit &amp; hand over</button><span class="muted">The next supervisor will see and accept this.</span></div></div>';
+    html+='<div class="row"><button class="btn o" data-act="sup-step" data-n="3">← Back</button></div>';
+  }
+  return html;
+}
+
+/* ---- Admin page ---- */
+function tbl(cols, rows){ return '<div class="tw"><table><thead><tr>'+cols.map(c=>'<th>'+h(c)+'</th>').join('')+'</tr></thead><tbody>'+
+  (rows.length? rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('') : '<tr><td colspan="'+cols.length+'" class="muted">Nothing yet.</td></tr>')+'</tbody></table></div>'; }
+function csv(cols, rows, name){
+  const esc=v=>'"'+String(v).replace(/<[^>]*>/g,'').replace(/"/g,'""')+'"';
+  const txt=[cols.map(esc).join(',')].concat(rows.map(r=>r.map(esc).join(','))).join('\n');
+  const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(txt); a.download=name+'.csv'; a.click();
+}
+let ADMIN_CUR=null;
+function viewAdmin(){
+  const tabs=[['reports','Reports'],['accepts','Acceptance'],['flags','Flags'],['evals','Evaluations'],['rosters','Rosters'],['users','Users'],['config','Config']];
+  let html='<div class="note"><b>Google Sheet connected</b> · last 60 days · loaded '+(DB.at?fmtDT(DB.at.toISOString()):'—')+'</div>';
+  html+='<div class="tabs">'+tabs.map(t=>'<button class="tab'+(S.adminTab===t[0]?' on':'')+'" data-act="admin-tab" data-t="'+t[0]+'">'+t[1]+'</button>').join('')+'</div>';
+  const reps=R().slice().sort((a,b)=>b.submittedAt.localeCompare(a.submittedAt));
+  let cols=[],rows=[];
+  if(S.adminTab==='reports'){
+    cols=['Role','Name','Shift','Date','Submitted','Status','Numbers','Notes / problems','Accepted by','Accepted from previous shift'];
+    rows=reps.map(r=>{const st=statusOf(r);
+      return [ROLES[r.role],h(r.name),shiftOf(r.shift).label,fmtDate(r.shiftDate),fmtDT(r.submittedAt),'<span class="pill '+st.cls+'">'+st.txt+'</span>',
+      FIELDS[r.role].map(f=>h(f.l)+': <b>'+h(r.data[f.k])+'</b>').join('<br>'),
+      h(r.notes||'')+(r.problems?r.problems.map(p=>h(p.problem)+' → '+h(p.action)).join('<br>'):''),
+      r.onTime ? (r.accepts.map(a=>h(a.name)+' '+fmtDT(a.at)).join('<br>')||'—') : (acksOf(r).length?'<span style="color:var(--pend)">acknowledged: '+acksOf(r).map(a=>h(a.name)+' '+fmtDT(a.at)).join('<br>')+'</span>':'<span style="color:var(--red)">not seen</span>'),
+      acceptedFromLine(r.u,r.role,r.shift,r.shiftDate)||'—'];});
+  }
+  if(S.adminTab==='accepts'){
+    cols=['Role','Report by','Shift','Date','Status','Accepted by','Waiting'];
+    rows=reps.filter(r=>!shiftOf(r.shift).overlap).map(r=>{const exp=expectedAcceptors(r); const w=exp?exp.filter(n=>!r.accepts.some(a=>a.name===n)):null; const st=statusOf(r);
+      return [ROLES[r.role],h(r.name),shiftOf(r.shift).label,fmtDate(r.shiftDate),'<span class="pill '+st.cls+'">'+st.txt+'</span>',r.accepts.map(a=>h(a.name)+' '+fmtTime(a.at)).join('<br>')||'—',
+        !r.onTime ? (acksOf(r).length?'<span style="color:var(--pend)">late — acknowledged by '+acksOf(r).map(a=>h(a.name)).join(', ')+'</span>':'<span style="color:var(--red)">late — not acknowledged</span>') : (w===null?'<span class="muted">roster not entered</span>':(w.length?'<span style="color:var(--pend)">'+w.map(h).join(', ')+'</span>':'<span style="color:var(--ok)">none</span>'))];});
+  }
+  if(S.adminTab==='flags'){
+    cols=['Shift','Date','CT activated','RC received','Overlap CT (separate)','Status'];
+    const keys=[...new Set(R().filter(r=>!shiftOf(r.shift).overlap).map(r=>r.shift+'|'+r.shiftDate))];
+    rows=keys.map(k=>{const [sh,d]=k.split('|'); const c=comparison(sh,d); return [shiftOf(sh).label,fmtDate(d),c.ctSum,c.rcSum,sum(c.ov,'activated'),
+      c.flag?'<span class="pill late">Mismatch</span>':(c.ct.length&&c.rc.length?'<span class="pill ok">Match</span>':'<span class="pill pend">Incomplete</span>')];}).sort((a,b)=>b[1].localeCompare(a[1]));
+  }
+  if(S.adminTab==='evals'){
+    cols=['Employee','Shift','Date','Supervisor'].concat(EVAL_CATS.map(c=>c.en),['Notes']);
+    rows=DB.d.evals.map(e=>[h(e.employee),shiftOf(e.shift).label,fmtDate(e.shiftDate),h((DB.d.users.find(u=>u.u===e.sup)||{}).name||e.sup)].concat(EVAL_CATS.map(c=>e.scores[c.k]||'—'),[h(e.notes)]));
+  }
+  if(S.adminTab==='rosters'){
+    cols=['Shift','Date','Supervisor','Members'];
+    rows=DB.d.rosters.map(r=>[shiftOf(r.shift).label,fmtDate(r.shiftDate),h((DB.d.users.find(u=>u.u===r.sup)||{}).name||r.sup),r.members.map(m=>h(m.name)+' ('+m.role+' · '+shiftOf(m.shift).label+')').join('<br>')]);
+  }
+  if(S.adminTab==='users'){ cols=['Username','Name','Role']; rows=DB.d.users.map(u=>[h(u.u),h(u.name),ROLES[u.role]]); }
+  if(S.adminTab==='config'){ cols=['ID','Label','Start','End','Overlap','Accepts','Expected acceptors'];
+    rows=SHIFTS.map(s=>[s.id,s.label,s.start,s.end,s.overlap?'Yes':'No',s.accepts.map(a=>shiftOf(a.shift).label+(a.offset?' (prev day)':'')).join(', ')||'—',shiftOf(s.next.shift).label+(s.next.offset?' (next day)':'')]);
+    rows.push(['GRACE','On-time grace',GRACE_MIN+' min','','','','']); }
+  ADMIN_CUR={cols,rows};
+  html+=tbl(cols,rows);
+  html+='<div class="row" style="margin-top:12px"><button class="btn o sm" data-act="export">Export CSV</button></div>';
+  return html;
+}
+
+/* ---- actions ---- */
+async function doLogin(){
+  const uu=($('#in-u')||{value:''}).value.trim().toLowerCase(), pp=($('#in-p')||{value:''}).value;
+  if(!uu||!pp){ toast('Enter username and password'); return; }
+  setBusy(true);
+  try{
+    const j=await api('login',{username:uu,password:pp});
+    S.user=j.user; S.token=j.token; S.mustChange=!!j.mustChange; S.shift=null; S.shiftDate=null; S.supStep=1; applyConfig(j); saveSession();
+    setBusy(false); render();
+    if(!S.mustChange) await reload();
+  }catch(e){ setBusy(false); toast(e.message); }
+}
+async function doChangePassword(){
+  const a=$('#np1').value, b=$('#np2').value;
+  if(a.length<4){ toast('Password too short'); return; } if(a!==b){ toast('Passwords do not match'); return; }
+  setBusy(true);
+  try{ const j=await api('changePassword',{newPassword:a}); S.token=j.token; S.mustChange=false; saveSession(); toast('Password saved'); setBusy(false); render(); await reload(); }
+  catch(e){ setBusy(false); toast(e.message); }
+}
+function logout(){ S.user=null; S.token=null; S.mustChange=false; S.shift=null; S.shiftDate=null; DB.d={users:[],reports:[],rosters:[],evals:[]}; DB.at=null; saveSession(); render(); }
+document.addEventListener('keydown', e=>{ const k=e.target.dataset&&e.target.dataset.enter; if(e.key==='Enter'&&k){ e.preventDefault(); if(k==='login') doLogin(); if(k==='chpw') doChangePassword(); } });
+document.addEventListener('click', e=>{
+  const el=e.target.closest('[data-act]'); if(!el||BUSY) return; const act=el.dataset.act;
+  if(act==='login'){ doLogin(); }
+  if(act==='chpw'){ doChangePassword(); }
+  if(act==='logout'){ logout(); }
+  if(act==='refresh'){ reload(); }
+  if(act==='change-shift'){ S.shift=null; S.shiftDate=null; saveSession(); render(); }
+  if(act==='pick-shift'){ S.shift=el.dataset.id; S.shiftDate=currentShiftDate(shiftOf(S.shift),new Date()); S.supStep=1; saveSession(); render(); }
+  if(act==='accept-all'){ const n=$('#accept-note'); write('acceptMany',{reportIds:el.dataset.ids.split(','),reportRole:el.dataset.role,note:n?n.value.trim():'',myShift:S.shift,myShiftDate:S.shiftDate},'Accepted'); }
+  if(act==='ack'){ const r=R().find(x=>x.id===el.dataset.id); if(r&&!ackedBy(r,S.user.u)){ const n=document.querySelector('[data-note="'+r.id+'"]');
+    write('acknowledge',{reportId:r.id,reportRole:r.role,note:n?n.value.trim():''},'Acknowledged'); } }
+  if(act==='add-prob'){ const tb=$('#probs tbody'); const tr=document.createElement('tr'); tr.innerHTML='<td><input class="fld" data-p="problem"></td><td><input class="fld" data-p="action"></td>'; tb.appendChild(tr); }
+  if(act==='submit-report'){ submitReport(); }
+  if(act==='sup-step'){ S.supStep=Number(el.dataset.n); saveSession(); render(); }
+  if(act==='add-roster'){ const tb=$('#roster tbody'); const tr=document.createElement('tr'); tr.innerHTML='<td><input class="fld" list="names" data-r="name" placeholder="Name"></td><td><select class="fld" data-r="role">'+['CT','RC'].map(x=>'<option value="'+x+'">'+ROLES[x]+'</option>').join('')+'</select></td><td><select class="fld" data-r="shift">'+SHIFTS.map(x=>'<option value="'+x.id+'"'+(x.id===S.shift?' selected':'')+'>'+h(x.label)+'</option>').join('')+'</select></td><td><button class="btn o sm" data-act="del-row">×</button></td>'; tb.appendChild(tr); }
+  if(act==='del-row'){ el.closest('tr').remove(); }
+  if(act==='save-roster'){ const members=[...document.querySelectorAll('#roster tbody tr')].map(tr=>({name:tr.querySelector('[data-r=name]').value.trim(),role:tr.querySelector('[data-r=role]').value,shift:tr.querySelector('[data-r=shift]').value})).filter(m=>m.name);
+    write('saveRoster',{shift:S.shift,shiftDate:S.shiftDate,members},'Roster saved'); }
+  if(act==='score'){ const sc=el.closest('.scale'); sc.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===el)); }
+  if(act==='save-eval'){ const card=el.closest('.card'); const emp=el.dataset.emp; const scores={}; card.querySelectorAll('.scale').forEach(sc=>{ const on=sc.querySelector('button.on'); if(on) scores[sc.dataset.cat]=Number(on.dataset.n); });
+    if(Object.keys(scores).length<EVAL_CATS.length){ toast('Score all five categories'); return; }
+    write('saveEval',{shift:S.shift,shiftDate:S.shiftDate,employee:emp,scores,notes:card.querySelector('[data-ev=notes]').value.trim()},'Evaluation saved'); }
+  if(act==='admin-tab'){ S.adminTab=el.dataset.t; saveSession(); render(); }
+  if(act==='export'){ if(ADMIN_CUR) csv(ADMIN_CUR.cols,ADMIN_CUR.rows,'tec_'+S.adminTab+'_'+dateKey(new Date())); }
+});
+function submitReport(){
+  const role=S.user.role; const f=FIELDS[role]; const data={};
+  for(const x of f){ const inp=document.querySelector('[data-f="'+x.k+'"]'); const v=inp?inp.value.trim():''; if(v===''){ toast('Fill in: '+x.l); inp&&inp.focus(); return; } data[x.k]= x.text? v : Number(v); }
+  if(myReport()){ toast('You already submitted this shift'); render(); return; }
+  const p={shift:S.shift,shiftDate:S.shiftDate,data};
+  if(role==='CT') p.problems=[...document.querySelectorAll('#probs tbody tr')].map(tr=>({problem:tr.querySelector('[data-p=problem]').value.trim(),action:tr.querySelector('[data-p=action]').value.trim()})).filter(pp=>pp.problem||pp.action);
+  else p.notes=($('#rc-notes')||{value:''}).value.trim();
+  write('submit',p,'Report submitted');
+}
+
+/* ---- init ---- */
+loadSession(); render();
+if(S.user && !S.mustChange) reload();
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && S.user && DB.at && (Date.now()-DB.at.getTime())>60000) reload(); });
+</script>
+</body>
+</html>
