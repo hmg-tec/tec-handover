@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TEC Shift Report</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='16 12 128 132'%3E%3Cpath d='M32 128V40L80 92L128 40V128' fill='none' stroke='%230F3D22' stroke-width='16' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M69 124L80 110L91 124' fill='none' stroke='%23C9A227' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* HMG red as accent only; dark grey app bar; neutral greys everywhere else */
+  --green:#B11226; --gold:#B11226; --cream:#FFFFFF; --bar:#2B2B2B; --dark:#2B2B2B;
+  --ink:#1F1F1F; --muted:#6E6E6E; --line:#E3E3E3; --bg:#F5F5F5; --panel:#FAFAFA; --soft:#F9E6E8;
+  --ok:#1E8A4C; --okbg:#E4F3EA; --pend:#B8860B; --red:#B11226;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:14px}
+button,input,select,textarea{font-family:inherit;font-size:14px;color:inherit}
+a{color:var(--green)}
+.wrap{max-width:960px;margin:0 auto;padding:18px 16px 72px}
+
+/* app bar */
+.appbar{background:var(--bar);color:var(--cream);padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
+.appbar .t{font-size:15px;font-weight:600}
+.appbar .sp{margin-left:auto;font-size:12.5px;opacity:.85;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.appbar .lnk{color:var(--cream);background:rgba(255,255,255,.14);border:0;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12.5px}
+.appbar select.lnk option{color:var(--ink)}
+.logo{width:24px;height:24px;flex:none}
+
+/* generic */
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
+.card.hl{border-left:4px solid var(--gold);background:#FFFAFA}
+.card.locked{position:relative;overflow:hidden}
+.card.locked > *{filter:blur(1.5px);pointer-events:none;user-select:none}
+.card.locked .lockmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(245,245,245,.75);filter:none;pointer-events:auto;font-weight:500;color:var(--green);text-align:center;padding:20px}
+h2.sec{font-size:12px;color:var(--green);margin:22px 0 10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;display:flex;align-items:center;gap:8px}
+h2.sec:first-child{margin-top:4px}
+h2.sec small{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:12px}
+.muted{color:var(--muted);font-size:12.5px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grow{flex:1}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:3px 10px;border-radius:999px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.pill.pend{background:#FBF3DC;color:var(--pend)}
+.pill.ok{background:var(--okbg);color:var(--ok)}
+.pill.late{background:var(--soft);color:var(--red)}
+.pill.info{background:#EFEFEF;color:#444}
+.btn{font-weight:500;border:0;border-radius:8px;padding:10px 18px;cursor:pointer;background:var(--green);color:var(--cream)}
+.btn.g{background:var(--gold);color:#fff}
+.btn.o{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.btn.sm{padding:7px 12px;font-size:13px}
+.btn.danger{background:#fff;border:1px solid #E7C9C9;color:var(--red)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.fld{width:100%;border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:#fff}
+textarea.fld{min-height:80px;resize:vertical;line-height:1.6}
+.num{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px;width:110px;text-align:center;border:1px solid var(--line);border-radius:6px;padding:7px;background:#fff}
+label.l{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.tw{border:1px solid var(--line);border-radius:8px;overflow:auto;background:#fff}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--dark);color:var(--cream);font-weight:500;font-size:11px;padding:9px 12px;text-align:left;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+tbody td{border-bottom:1px solid var(--line);padding:9px 12px;vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+td.mono,.mono{font-family:'IBM Plex Mono',monospace;font-weight:600}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.kv>div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+.kv .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.kv .v{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:18px;color:var(--ink);margin-top:2px}
+.kv .v.txt{font-family:Inter,sans-serif;font-size:14px;font-weight:500}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 16px;cursor:pointer;font-weight:500}
+.chip small{display:block;font-weight:400;color:var(--muted);font-size:11.5px}
+.chip.on{background:var(--dark);border-color:var(--dark);color:var(--cream)}
+.chip.on small{color:rgba(255,255,255,.8)}
+.stepper{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.step{flex:1;min-width:120px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 12px;cursor:pointer;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px}
+.step .n{width:20px;height:20px;border-radius:50%;background:var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex:none}
+.step.on{border-color:var(--green);color:var(--green)}
+.step.on .n{background:var(--green);color:var(--cream)}
+.step.done .n{background:var(--ok);color:#fff}
+.flag{border:1px solid #F0CDD1;background:var(--soft);color:var(--red);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:10px}
+.okbox{border:1px solid #CDE8D7;background:var(--okbg);color:var(--ok);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:10px}
+.note{border:1px solid var(--line);border-left:4px solid var(--gold);background:#fff;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.6;color:#3A4A4A;margin-bottom:12px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;cursor:pointer;font-size:13px}
+.tab.on{background:var(--dark);border-color:var(--dark);color:var(--cream)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.show{opacity:1}
+.hidden{display:none!important}
+body.busy .btn,body.busy .lnk,body.busy .chip{opacity:.55;pointer-events:none}
+body.busy::after{content:'';position:fixed;top:0;left:0;right:0;height:3px;background:var(--gold);animation:bar 1s linear infinite;z-index:10}
+@keyframes bar{0%{transform:scaleX(0);transform-origin:left}50%{transform:scaleX(1);transform-origin:left}51%{transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
+.menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.big{border-radius:14px;padding:20px;text-align:left;border:2px solid transparent;min-height:118px;display:flex;flex-direction:column;gap:6px;cursor:pointer;font:inherit}
+.big .t{font-size:16px;font-weight:600}.big .d{font-size:12.5px;opacity:.85}
+.big.grey{background:#ECECEC;color:#666;border-color:#DDD}
+.big.done{background:var(--okbg);color:var(--ink);border-color:#CDE8D7}
+.big.done .st{color:var(--ok)}
+.big.warn{background:#fff;color:var(--ink);border-color:var(--line)}
+.big.warn .st{color:var(--green)}
+.big:disabled{opacity:.55;cursor:not-allowed}
+.big .st{margin-top:auto;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.back{display:inline-flex;align-items:center;gap:6px;margin-bottom:14px;background:#fff;border:1px solid var(--line);border-radius:8px;color:var(--green);cursor:pointer;padding:8px 14px;font-size:13.5px;font-weight:500}
+.back:hover{border-color:var(--green)}
+.abox{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 11px;text-align:left;cursor:pointer;font:inherit;color:inherit}
+.abox .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}.abox .v{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:20px;color:var(--green);margin-top:2px}.abox.bad .v{color:var(--red)}.abox.bad{border-color:#F0CDD1;background:var(--soft)}
+.chain{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:4px 0 8px}
+.node{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 12px;min-width:150px;font-size:13px}.node b{display:block}.node span{display:block;font-size:12px}.node.bad{border-color:#E7C9C9;background:#FDF3F3}.node.wait{border-color:#F3E2B0;background:#FFFBEE}
+.arrow{color:var(--muted);font-size:12px;text-align:center;min-width:110px}.arrow.bad{color:var(--red);font-weight:600}
+.lnk2{background:none;border:1px solid var(--line);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:12px}
+.eval{display:grid;grid-template-columns:1fr 90px;gap:6px 10px;align-items:center;font-size:13px}
+.eval .ar{font-size:11.5px;color:var(--muted)}
+.scale{display:flex;gap:4px}
+.scale button{width:30px;height:30px;border:1px solid var(--line);background:#fff;border-radius:6px;cursor:pointer;font-weight:600;font-size:12.5px}
+.scale button.on{background:var(--dark);border-color:var(--dark);color:#fff}
+
+/* sign in */
+.signin{max-width:400px;margin:56px auto 0;background:#fff;border:1px solid var(--line);border-radius:16px;padding:40px 30px;text-align:center}
+.signin .mark{width:56px;height:56px;margin:0 auto 14px}
+.signin h1{font-size:20px;color:var(--green);margin:0 0 4px;font-weight:700}
+.signin p{color:var(--muted);font-size:13px;margin:0 0 26px}
+.signin .f{text-align:left;margin-bottom:13px}
+.pick{width:100%;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:8px;padding:11px 12px;background:#fff;cursor:pointer;font-size:15px;text-align:left}
+.pick.on{border-color:var(--green);color:var(--ink);font-weight:500}
+.picker{border:1px solid var(--line);border-radius:10px;margin-top:8px;padding:10px;background:#fff;box-shadow:0 12px 30px -18px rgba(0,60,60,.5)}
+.plist{max-height:260px;overflow:auto;margin-top:8px}
+.prow{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;border-bottom:1px solid var(--line);background:#fff;padding:11px 8px;cursor:pointer;text-align:left;font-size:14.5px}
+.prow:last-child{border-bottom:0}.prow:hover{background:var(--panel)}
+.signin .btn{width:100%;margin-top:8px}
+.demo{margin-top:20px;font-size:12px;color:var(--muted);text-align:left}
+.demo code{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:11.5px}
+
+@media(max-width:640px){
+  .num{width:84px}
+  .eval{grid-template-columns:1fr}
+  .kv .v{font-size:16px}
+}
+</style>
+</head>
+<body>
+<svg style="display:none" aria-hidden="true">
+  <symbol id="ma-logo" viewBox="16 12 128 132">
+    <path d="M32 128V40L80 92L128 40V128" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M69 124L80 110L91 124" fill="none" stroke="#C9A227" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+</svg>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   TEC Shift Report — v10 (simplified)
+   Staff: role today → shift → report → done.  Supervisor: target question + evaluate.  Admin: shift by shift.
+   ===================================================================== */
+const APP_VERSION = 'v10.3';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzx5AGGXWe6--hiOmdi9qwJOfDnRBWI-vxT0WyV3MFFX-_eCB3UILQtRsbDBvrtcR4I/exec';
+
+let SHIFTS = [
+  { id:'DAY',   label:'Day',        start:'07:00', end:'19:00', overlap:false, prev:{shift:'NIGHT',offset:-1}, next:{shift:'NIGHT',offset:0} },
+  { id:'NIGHT', label:'Night',      start:'19:00', end:'07:00', overlap:false, prev:{shift:'DAY',offset:0},    next:{shift:'DAY',offset:1} },
+  { id:'OV12',  label:'Overlap 12', start:'12:00', end:'00:00', overlap:true,  prev:null, next:null },
+  { id:'OV4',   label:'Overlap 4',  start:'16:00', end:'04:00', overlap:true,  prev:null, next:null },
+];
+const ROLES = { CT:'Call Taker', RC:'Response Coordinator', SUP:'Supervisor', STAFF:'Staff', ADMIN:'Admin' };
+const FIELDS = {
+  CT:  [ {k:'cases',l:'Total cases'}, {k:'activated',l:'Cases activated to Response'}, {k:'pending',l:'Pending cases'}, {k:'needAct',l:'Cases needing activation'} ],
+  RC:  [ {k:'fromCT',l:'Cases received from Call Taker'}, {k:'during',l:'Cases during the shift'}, {k:'unitsReady',l:'Units ready and available'}, {k:'unitsBusy',l:'Units busy outside'} ],
+  SUP: [],
+};
+const EVAL_CATS = [
+  {k:'c1', en:'Communication professionalism', ar:'الاحترافية في التواصل'},
+  {k:'c2', en:'Attendance commitment',          ar:'الالتزام بالحضور'},
+  {k:'c3', en:'Work environment',               ar:'بيئة العمل'},
+  {k:'c4', en:'Data entry quality',             ar:'جودة إدخال البيانات'},
+  {k:'c5', en:'Periodic meetings',              ar:'الاجتماعات الدورية'},
+];
+const SUP_EVAL_CATS = [
+  {k:'s1', en:'Daily evaluation',        ar:'التقييم اليومي'}, {k:'s2', en:'Attendance commitment', ar:'الالتزام بالحضور'}, {k:'s3', en:'Guidance', ar:'التوجيه'},
+  {k:'s4', en:'Training new staff',      ar:'تدريب الجدد'},    {k:'s5', en:'Call reports',          ar:'تقارير المكالمات'}, {k:'s6', en:'Technical tickets', ar:'التذاكر التقنية'},
+  {k:'s7', en:'Challenges',              ar:'التحديات'},       {k:'s8', en:'Escalation',            ar:'التصعيد'},          {k:'s9', en:'Justifying the numbers', ar:'تبرير الأرقام'},
+];
+const SCALE = {1:'Below average',2:'Average',3:'Excellent',4:'Perfect',5:'Beyond job description'};
+const DAILY_FIELDS = [ {k:'totalCalls',l:'Total Calls'}, {k:'abandoned',l:'Abandoned Calls (>5 sec only)'}, {k:'serviceLevel',l:'Service Level (%)'}, {k:'callDuration',l:'Average Call Duration',text:true}, {k:'pickup',l:'Average Pickup Time',text:true} ];
+
+/* ---- helpers ---- */
+const $ = s => document.querySelector(s);
+const h = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2,'0');
+const shiftOf = id => SHIFTS.find(s=>s.id===id);
+function dateKey(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function parseKey(k){ const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d); }
+function addDays(k,n){ const d=parseKey(k); d.setDate(d.getDate()+n); return dateKey(d); }
+function fmtDate(k){ if(!k) return '—'; const [y,m,d]=k.split('-'); return d+'/'+m+'/'+y; }
+function fmtTime(iso){ if(!iso) return '—'; const d=new Date(iso); return pad(d.getHours())+':'+pad(d.getMinutes()); }
+function fmtDT(iso){ if(!iso) return '—'; const d=new Date(iso); return fmtDate(dateKey(d))+' '+fmtTime(iso); }
+function mins(t){ const [hh,mm]=t.split(':').map(Number); return hh*60+mm; }
+function crosses(s){ return mins(s.end) <= mins(s.start); }
+function currentShiftDate(s, now){ const t=now.getHours()*60+now.getMinutes(); if (crosses(s) && t < mins(s.end)+30) return addDays(dateKey(now),-1); return dateKey(now); }
+function suggestShift(now){
+  for (const s of SHIFTS.filter(x=>!x.overlap)){ const k=currentShiftDate(s,now); const st=parseKey(k); st.setHours(...s.start.split(':').map(Number),0,0); const en=parseKey(crosses(s)?addDays(k,1):k); en.setHours(...s.end.split(':').map(Number),0,0);
+    if (now>=st && now.getTime()<=en.getTime()+30*60000) return s.id; }
+  return 'DAY';
+}
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._x); t._x=setTimeout(()=>t.classList.remove('show'),2600); }
+function sum(arr,k){ return arr.reduce((a,r)=>a+(Number(r.data&&r.data[k])||0),0); }
+const f1=v=>v===null||v===undefined||isNaN(v)?'—':(Math.round(v*10)/10).toFixed(1);
+
+/* ---- data ---- */
+const DB = { d:{ users:[], reports:[], evals:[], daily:[], supEvals:[] } };
+let BUSY=false;
+function setBusy(b){ BUSY=b; document.body.classList.toggle('busy',b); }
+async function api(action, payload){
+  const body=Object.assign({action}, S.user?{username:S.user.u, token:S.token}:{}, (S.user&&S.user.isSuper&&S.viewRole)?{asRole:S.viewRole}:{}, payload||{});
+  const res=await fetch(API_URL,{method:'POST', body:JSON.stringify(body), redirect:'follow'});
+  let j; try{ j=await res.json(); }catch(e){ throw new Error('Server did not answer as expected — check the deployment access is set to "Anyone".'); }
+  if(!j.ok) throw new Error(j.error||'Request failed');
+  return j;
+}
+function applyConfig(j){ if(j.shifts&&j.shifts.length) SHIFTS=j.shifts; }
+function applyData(j){
+  applyConfig(j);
+  DB.d = { users:j.users||[], reports:j.reports||[], evals:j.evals||[], daily:j.daily||[], supEvals:j.supEvals||[] };
+  DB.today = j.today || dateKey(new Date()); DB.at = new Date();
+}
+async function reload(){
+  if(!S.user) return; setBusy(true);
+  try{ applyData(curRole()==='ADMIN' ? await api('admin',{days:60}) : await api('bootstrap',{days:45})); }
+  catch(e){ toast(e.message); }
+  finally{ setBusy(false); render(); }
+}
+async function write(action, payload, okMsg){
+  setBusy(true);
+  try{ const j=await api(action,payload); if(j.data) applyData(j.data); toast(okMsg||'Saved'); setBusy(false); render(); return j; }
+  catch(e){ toast(e.message); setBusy(false); render(); return null; }
+}
+
+/* ---- session ---- */
+const S = { user:null, token:null, mustChange:false, staffRole:null, shift:null, shiftDate:null, view:'home', viewRole:null, rolePicked:false, open:null, adminTab:'home', dailyDate:'', pastShift:null, pastDate:'', from:null, to:null, evalWho:'staff', supEval:{name:'',shift:'',date:''}, resetName:null, enter:{name:'',role:'CT',shift:'',date:''}, pickShift:null, pickDate:null, dayDate:null };
+const KEEP=['user','token','mustChange','staffRole','shift','shiftDate','view','viewRole','rolePicked','adminTab'];
+function loadSession(){ try{ const j=JSON.parse(localStorage.getItem('tec_sess')); if(j) Object.assign(S,j); }catch(e){} }
+function saveSession(){ try{ const o={}; KEEP.forEach(k=>o[k]=S[k]); localStorage.setItem('tec_sess', JSON.stringify(o)); }catch(e){} }
+function curRole(){ return (S.user&&S.user.isSuper&&S.viewRole)||(S.user&&S.user.role); }      // ADMIN | SUP | STAFF
+function myRole(){ return curRole()==='SUP'?'SUP':curRole()==='STAFF'?S.staffRole:null; }   // CT | RC | SUP
+function canAnyDate(){ return S.user && (S.user.role==='ADMIN' || S.user.isSuper); }
+
+/* ---- queries ---- */
+const R = () => DB.d.reports;
+function myReports(){ return R().filter(r=>r.name===S.user.name).sort((a,b)=>b.submittedAt.localeCompare(a.submittedAt)); }
+function myReport(){ return R().find(r=>r.role===myRole() && r.name===S.user.name && r.shift===S.shift && r.shiftDate===S.shiftDate); }
+function prevOf(shiftId,key){ const s=shiftOf(shiftId); if(!s||!s.prev) return null; return {shift:s.prev.shift, date:addDays(key,s.prev.offset)}; }
+function reportsFor(role,shiftId,key){ return R().filter(r=>r.role===role&&r.shift===shiftId&&r.shiftDate===key).sort((a,b)=>a.submittedAt.localeCompare(b.submittedAt)); }
+function evalsFor(shiftId,key){ return DB.d.evals.filter(e=>e.shift===shiftId&&e.shiftDate===key); }
+function staffUsers(){ return DB.d.users.filter(u=>u.role==='STAFF'); }
+
+/* ---- render ---- */
+function render(){
+  const app=$('#app');
+  if(!S.user){ app.innerHTML=viewSignIn(); return; }
+  if(S.mustChange){ app.innerHTML=viewChangePassword(); return; }
+  if(!DB.at){ app.innerHTML=viewAppBar()+'<div class="wrap"><div class="card"><span class="muted">Loading…</span></div></div>'; return; }
+  let body;
+  if(S.user.isSuper && !S.rolePicked) body=viewRolePick();
+  else if(curRole()==='ADMIN') body=viewAdmin();
+  else if(curRole()==='STAFF' && !S.staffRole) body=viewStaffRole();
+  else if(S.view==='log') body=viewLog();
+  else if(curRole()==='SUP') body=viewSup();
+  else body=viewStaff();
+  app.innerHTML=viewAppBar()+'<div class="wrap">'+body+'</div>';
+}
+// MA Solution logo — fixed brand colors, never tied to the app theme
+const LOGO_GREEN='#0F3D22', LOGO_CREAM='#F3EBD3';
+function logoSvg(cls,color){ return '<svg class="'+cls+'" style="color:'+color+'"><use href="#ma-logo"/></svg>'; }
+
+/* ---- sign in: pick your name, then password ---- */
+const PICK = { open:false, q:'', name:null, empId:'' };
+let STAFF = []; try{ STAFF = JSON.parse(localStorage.getItem('tec_staff')||'[]'); }catch(e){}
+async function loadStaff(){ try{ const j=await api('staff'); STAFF=j.staff||[]; STAFF._asked=true; try{ localStorage.setItem('tec_staff',JSON.stringify(STAFF)); }catch(e){} if(!S.user) render(); }catch(e){ if(!STAFF.length) toast(e.message); } }
+function viewSignIn(){
+  if(!STAFF._asked){ STAFF._asked=true; loadStaff(); }
+  const q=PICK.q.trim().toLowerCase();
+  const list=STAFF.filter(x=>!q||String(x.name).toLowerCase().includes(q)||String(x.empId||'').toLowerCase().includes(q));
+  let html='<div class="wrap"><div class="signin">'+logoSvg('mark',LOGO_GREEN)+'<h1>Shift Report</h1><p>TEC — Emergency Communication Center</p><div id="f-login"><div class="f"><label class="l">Sign in to continue</label>';
+  if(PICK.name) html+='<button type="button" class="pick on" data-act="pick-name"><span>'+h(PICK.name)+'</span><span class="muted">'+h(PICK.empId||'')+' ▾</span></button>';
+  else html+='<button type="button" class="pick" data-act="pick-name"><span class="muted">Pick your name</span><span class="muted">▾</span></button>';
+  if(PICK.open) html+='<div class="picker"><input class="fld" id="staff-q" placeholder="Search staff" value="'+h(PICK.q)+'" autocomplete="off"><div class="plist">'+
+    (STAFF.length? (list.length? list.map(x=>'<button type="button" class="prow" data-act="choose-name" data-name="'+h(x.name)+'" data-emp="'+h(x.empId||'')+'"><span>'+h(x.name)+'</span><span class="muted mono">'+h(x.empId||'')+'</span></button>').join('') : '<div class="muted" style="padding:10px 12px">No match</div>') : '<div class="muted" style="padding:10px 12px">Loading staff list…</div>')+'</div></div>';
+  html+='</div>';
+  if(PICK.name && !PICK.open) html+='<div class="f"><label class="l">Password</label><input class="fld" id="in-p" type="password" autocomplete="current-password" data-enter="login"></div><button class="btn" type="button" data-act="login">Sign In</button>';
+  return html+'</div><p class="muted" style="margin:18px 0 0">by MA Solution · '+APP_VERSION+'</p></div></div>';
+}
+function viewChangePassword(){
+  return '<div class="wrap"><div class="signin">'+logoSvg('mark',LOGO_GREEN)+'<h1>Set your password</h1><p>First sign-in for '+h(S.user.name)+' — choose a new password.</p>'+
+  '<div class="f"><label class="l">New password</label><input class="fld" id="np1" type="password" autocomplete="new-password" data-enter="chpw"></div>'+
+  '<div class="f"><label class="l">Repeat</label><input class="fld" id="np2" type="password" autocomplete="new-password" data-enter="chpw"></div>'+
+  '<button class="btn" type="button" data-act="chpw">Save password</button><button class="btn o" type="button" style="margin-top:8px" data-act="logout">Cancel</button></div></div>';
+}
+function viewAppBar(){
+  const s=S.shift?shiftOf(S.shift):null; const roleTxt = curRole()==='ADMIN'?'Admin':curRole()==='SUP'?'Supervisor':(S.staffRole?ROLES[S.staffRole]:'Staff');
+  return '<div class="appbar">'+logoSvg('logo',LOGO_CREAM)+'<span class="t">Shift Report</span>'+
+  '<span class="sp">'+h(S.user.name)+' · '+roleTxt+(S.user.isSuper&&S.rolePicked?' <button class="lnk" data-act="switch-role">Switch role</button>':'')+
+  (curRole()==='STAFF'&&S.staffRole?' <button class="lnk" data-act="change-role">Change role</button>':'')+
+  (s&&curRole()!=='ADMIN'?' · '+h(s.label)+' '+fmtDate(S.shiftDate)+' <button class="lnk" data-act="change-shift">Change</button>':'')+
+  ' <button class="lnk" data-act="refresh" title="Reload from the sheet">Refresh'+(DB.at?' · '+pad(DB.at.getHours())+':'+pad(DB.at.getMinutes()):'')+'</button> <button class="lnk" data-act="logout">Sign out</button></span></div>';
+}
+function big(cls, act, v, title, desc, status, disabled){
+  return '<button class="big '+cls+'" data-act="'+act+'" data-v="'+v+'" data-t="'+v+'"'+(disabled?' disabled':'')+'><span class="t">'+title+'</span><span class="d">'+desc+'</span><span class="st">'+status+'</span></button>';
+}
+function viewRolePick(){
+  return '<h2 class="sec">Continue as <small>choose which side of the app to use. Anything you submit is saved under your name in that role.</small></h2><div class="menu">'+
+    big('warn','pick-role','','Admin','Shift by shift, Daily Report, evaluations, users','Open →')+
+    big('warn','pick-role','STAFF','Staff','Call Taker / Response Coordinator pages as staff see them','Open →')+
+    big('warn','pick-role','SUP','Supervisor','Shift report, Daily Report, evaluate a past shift','Open →')+'</div>';
+}
+function viewStaffRole(){
+  return '<div class="card"><h2 class="sec">Your role today</h2><div class="chips">'+['CT','RC'].map(r=>'<button class="chip" data-act="staff-role" data-r="'+r+'">'+ROLES[r]+'</button>').join('')+'</div><div class="muted" style="margin-top:10px">Asked at every sign-in — you can be Call Taker one day and Response Coordinator the next.</div></div>';
+}
+function viewShiftPick(){
+  const now=new Date(); const sug=suggestShift(now); const sid=S.pickShift||sug; const base=currentShiftDate(shiftOf(sid),now);
+  const opts=[[addDays(base,-1),'Yesterday'],[base,'Today'],[addDays(base,1),'Tomorrow']]; const cur=S.pickDate||base;
+  let html='<div class="card"><h2 class="sec">Which shift are you on?</h2><div class="chips">'+SHIFTS.map(x=>'<button class="chip'+(x.id===sid?' on':'')+'" data-act="pick-shift" data-id="'+x.id+'">'+h(x.label)+'<small>'+x.start+' – '+x.end+'</small></button>').join('')+'</div>';
+  html+='<h2 class="sec">Shift date <small>the date the shift started</small></h2>';
+  if(canAnyDate()) html+='<div class="row"><input class="fld" type="date" id="pick-date" value="'+cur+'" style="width:auto"><span class="muted">admin — any date</span></div>';
+  else html+='<div class="chips">'+opts.map(o=>'<button class="chip'+(o[0]===cur?' on':'')+'" data-act="pick-date" data-d="'+o[0]+'">'+fmtDate(o[0])+'<small>'+o[1]+'</small></button>').join('')+'</div>';
+  return html+'<div class="row" style="margin-top:18px"><button class="btn" data-act="pick-go">Continue</button><span class="muted">Suggested from the current time.</span></div></div>';
+}
+
+/* ---- report cards ---- */
+function statusPill(r){ return '<span class="pill info">Submitted '+fmtTime(r.submittedAt)+'</span>'+(r.enteredBy?' <span class="pill pend">entered by '+h(r.enteredBy)+'</span>':''); }
+function reportCard(r, opts){
+  opts=opts||{}; const f=FIELDS[r.role]||[];
+  let html='<div class="card'+(opts.hl?' hl':'')+'"><div class="row" style="margin-bottom:10px"><strong>'+h(r.name)+'</strong><span class="muted">'+(ROLES[r.role]||r.role)+' · '+h(shiftOf(r.shift)?shiftOf(r.shift).label:r.shift)+' · '+fmtDate(r.shiftDate)+'</span>'+statusPill(r)+'</div>';
+  if(f.length) html+='<div class="kv">'+f.map(x=>'<div><div class="k">'+h(x.l)+'</div><div class="v">'+h(r.data[x.k])+'</div></div>').join('')+'</div>';
+  if(r.role==='SUP') html+='<div class="row" style="margin-top:6px"><span class="muted">Staff call numbers met the target:</span>'+(r.targetMet?'<span class="pill ok">Yes</span>':'<span class="pill late">No</span>')+'</div>'+(r.justification?'<div style="margin-top:8px;padding:9px 11px;background:var(--panel);border:1px solid var(--line);border-radius:8px"><span class="muted">Justification: </span>'+h(r.justification)+'</div>':'');
+  if(r.problems&&r.problems.length) html+='<div class="tw" style="margin-top:10px"><table><thead><tr><th>Problem</th><th>Action taken or required</th></tr></thead><tbody>'+r.problems.map(p=>'<tr><td>'+h(p.problem)+'</td><td>'+h(p.action)+'</td></tr>').join('')+'</tbody></table></div>';
+  if(r.notes) html+='<div style="margin-top:10px;padding:9px 11px;background:var(--panel);border:1px solid var(--line);border-radius:8px">'+h(r.notes)+'</div>';
+  if(r.role==='SUP' && opts.evals){ const ev=opts.evals; if(ev.length) html+='<div class="muted" style="margin-top:8px">Staff evaluated: '+ev.map(e=>h(e.employee)+' '+f1(avgOf(e))).join(' · ')+'</div>'; }
+  if(r.addedNotes&&r.addedNotes.length) html+='<div style="margin-top:10px"><div class="muted">Notes added later</div>'+r.addedNotes.map(n=>'<div style="padding:6px 0;border-top:1px solid var(--line);font-size:13px">'+h(n)+'</div>').join('')+'</div>';
+  if(opts.canNote) html+='<div class="row" style="margin-top:12px"><input class="fld grow" placeholder="Add a note to this shift" data-note="'+r.id+'"><button class="btn o sm" data-act="add-note" data-id="'+r.id+'" data-role="'+r.role+'">Add note</button></div>';
+  return html+'</div>';
+}
+function avgOf(e){ const v=EVAL_CATS.map(c=>Number(e.scores[c.k])).filter(n=>n); return v.length? v.reduce((a,b)=>a+b,0)/v.length : null; }
+function prevShiftBlock(role){
+  const p=prevOf(S.shift,S.shiftDate); if(!p) return '';
+  const list=reportsFor(role,p.shift,p.date);
+  let html='<h2 class="sec">Previous shift <small>'+h(shiftOf(p.shift).label)+' '+fmtDate(p.date)+' · read only</small></h2>';
+  if(!list.length) return html+'<div class="card"><span class="muted">Nothing submitted yet for '+h(shiftOf(p.shift).label)+' '+fmtDate(p.date)+'. Press Refresh later.</span></div>';
+  if(role==='SUP') return html+list.map(r=>reportCard(r,{evals:evalsFor(p.shift,p.date)})).join('');
+  const f=FIELDS[role];
+  html+='<div class="card"><div class="row" style="margin-bottom:10px"><strong>'+list.map(r=>h(r.name)).join(', ')+'</strong><span class="pill info">Submitted '+list.map(r=>fmtTime(r.submittedAt)).join(' · ')+'</span></div>';
+  html+='<div class="kv">'+f.map(x=>'<div><div class="k">'+h(x.l)+'</div><div class="v">'+sum(list,x.k)+'</div></div>').join('')+'</div>';
+  const probs=list.flatMap(r=>(r.problems||[]).filter(p=>p.problem||p.action).map(p=>({who:r.name,p})).concat(r.notes?[{who:r.name,p:{problem:r.notes,action:''}}]:[]));
+  if(probs.length) html+='<div class="tw" style="margin-top:10px"><table><thead><tr><th>From</th><th>Problem / note</th><th>Action</th></tr></thead><tbody>'+probs.map(x=>'<tr><td>'+h(x.who)+'</td><td>'+h(x.p.problem)+'</td><td>'+h(x.p.action)+'</td></tr>').join('')+'</tbody></table></div>';
+  return html+'</div>';
+}
+
+/* ---- staff page ---- */
+function viewStaff(){
+  if(!S.shift) return viewShiftPick();
+  const role=S.staffRole; const s=shiftOf(S.shift); const f=FIELDS[role]; const mine=myReport();
+  let html=prevShiftBlock(role);
+  html+='<h2 class="sec">My report <small>'+ROLES[role]+' · '+h(s.label)+' · '+fmtDate(S.shiftDate)+'</small></h2>';
+  if(mine) html+='<div class="okbox">Submitted '+fmtDT(mine.submittedAt)+'. Locked.</div>'+reportCard(mine,{canNote:true});
+  else {
+    const ctRep = role==='RC' ? reportsFor('CT',S.shift,S.shiftDate) : [];
+    html+='<div class="card"><div class="tw"><table><thead><tr><th>Item</th><th style="width:140px">Count</th>'+(role==='RC'?'<th style="width:190px">Reference</th>':'')+'</tr></thead><tbody>'+
+      f.map(x=>'<tr><td>'+h(x.l)+'</td><td><input class="num" type="number" min="0" inputmode="numeric" data-f="'+x.k+'"></td>'+(role==='RC'?'<td>'+(x.k==='fromCT'?'<span class="muted">CT handover cases: </span><b class="mono" style="color:var(--green)">'+(ctRep.length?sum(ctRep,'activated'):'—')+'</b>':'<span class="muted">—</span>')+'</td>':'')+'</tr>').join('')+'</tbody></table></div>';
+    if(role==='CT') html+='<h2 class="sec">Problems faced, other reasons or notes</h2><div class="tw"><table id="probs"><thead><tr><th style="width:50%">Problem</th><th>Action taken or required</th></tr></thead><tbody><tr><td><input class="fld" data-p="problem"></td><td><input class="fld" data-p="action"></td></tr></tbody></table></div><button class="btn o sm" style="margin-top:8px" data-act="add-prob">+ Add row</button>';
+    else html+='<h2 class="sec">Notes on cases or units, problems or other reasons</h2><textarea class="fld" id="rc-notes" placeholder="Status or action required"></textarea>';
+    html+='<div class="row" style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)"><button class="btn" data-act="submit-report">Submit report</button><span class="muted">Locks the report. Name, role, shift, date and time are recorded automatically.</span></div></div>';
+  }
+  html+='<div class="row" style="margin-top:8px"><button class="btn o" data-act="go-log">My log · last submissions</button></div>';
+  return html;
+}
+/* ---- my log (everyone) ---- */
+function viewLog(){
+  const list=myReports(); const back='<button class="back" data-act="go-home">← Back</button>';
+  let html=back+'<h2 class="sec">My log <small>your last submissions — open one to add a note</small></h2>';
+  if(!list.length) return html+'<div class="card"><span class="muted">Nothing submitted yet.</span></div>'+back;
+  const show=S.open? list.filter(r=>r.id===S.open) : [];
+  html+='<div class="tw"><table><thead><tr><th>Date</th><th>Shift</th><th>Role</th><th>Submitted</th><th>Numbers</th><th></th></tr></thead><tbody>'+
+    list.slice(0,S.showAll?200:5).map(r=>'<tr'+(S.open===r.id?' style="background:var(--panel)"':'')+'><td>'+fmtDate(r.shiftDate)+'</td><td>'+h(shiftOf(r.shift)?shiftOf(r.shift).label:r.shift)+'</td><td>'+ROLES[r.role]+'</td><td>'+fmtTime(r.submittedAt)+'</td><td class="mono">'+((FIELDS[r.role]||[]).map(x=>h(r.data[x.k])).join(' / ')||(r.targetMet?'Target met':'Target not met'))+'</td><td><button class="btn o sm" data-act="open-log" data-id="'+r.id+'">'+(S.open===r.id?'Close':'Open')+'</button></td></tr>').join('')+'</tbody></table></div>';
+  if(list.length>5&&!S.showAll) html+='<div class="row" style="margin-top:8px"><button class="btn o sm" data-act="log-all">Show all ('+list.length+')</button></div>';
+  if(show.length) html+='<div style="margin-top:14px">'+reportCard(show[0],{canNote:true,evals:show[0].role==='SUP'?evalsFor(show[0].shift,show[0].shiftDate):null})+'</div>';
+  return html+'<div style="margin-top:16px">'+back+'</div>';
+}
+
+/* ---- supervisor ---- */
+function viewSup(){
+  const back='<button class="back" data-act="sup-view" data-v="home">← Home</button>';
+  if(S.view==='report'){ if(!S.shift) return back+viewShiftPick(); return back+viewSupReport()+'<div style="margin-top:16px">'+back+'</div>'; }
+  if(S.view==='daily') return back+viewDaily()+'<div style="margin-top:16px">'+back+'</div>';
+  if(S.view==='past')  return back+viewPast()+'<div style="margin-top:16px">'+back+'</div>';
+  const today=DB.today||dateKey(new Date()); const dy=DB.d.daily.find(x=>x.date===addDays(today,-1));
+  return '<div class="menu">'+
+    big('warn','sup-view','report','Shift report','Target question + evaluate your staff', S.shift?h(shiftOf(S.shift).label)+' '+fmtDate(S.shiftDate)+' →':'Choose shift →')+
+    big(dy?'done':'grey','sup-view','daily','Daily Report','Total Calls, Abandoned, Service Level, Call Duration, Pickup Time — once per day', dy?'Yesterday saved by '+h(dy.name)+' '+fmtTime(dy.at):'Yesterday not filled')+
+    big('warn','sup-view','past','Evaluate a past shift','Forgot one? Pick the date and score the staff — evaluation only','Open →')+
+    big('warn','go-log','','My log','Your last submissions — open one to add a note','Open →')+'</div>';
+}
+/* the evaluation list for a shift: everyone who submitted a CT/RC report + names the supervisor added + names already scored */
+function evalList(shiftId,key){
+  const list=[]; const add=(name,role,sub)=>{ if(!list.some(x=>x.name===name)) list.push({name,role,sub}); };
+  ['CT','RC'].forEach(role=>reportsFor(role,shiftId,key).forEach(r=>add(r.name,role,r.submittedAt)));
+  evalsFor(shiftId,key).forEach(e=>add(e.employee,e.role,null));
+  (S.extraNames||[]).filter(x=>x.shift===shiftId&&x.date===key).forEach(x=>add(x.name,x.role,null));
+  return list;
+}
+function evalCards(shiftId,key,locked,addedLater){
+  const list=evalList(shiftId,key); const mineEvals=evalsFor(shiftId,key);
+  let html='';
+  if(!list.length) html+='<div class="card"><span class="muted">Nobody has submitted a report for this shift yet. Press Refresh, or + Add employee.</span></div>';
+  html+=list.map(m=>{
+    const ev=mineEvals.find(e=>e.employee===m.name)||{scores:{},comment:''};
+    return '<div class="card'+(ev.at?'':' hl')+'" data-emp="'+h(m.name)+'" data-role="'+m.role+'"><div class="row" style="margin-bottom:10px"><strong>'+h(m.name)+'</strong><span class="muted">'+ROLES[m.role]+(m.sub?' · submitted '+fmtTime(m.sub):' · added by you')+'</span>'+(ev.at?'<span class="pill ok">Saved'+(ev.addedLater?' · added later':'')+'</span>':'<span class="pill pend">Not scored</span>')+'</div><div class="eval">'+
+      EVAL_CATS.map(cat=>'<div>'+h(cat.en)+'<div class="ar">'+h(cat.ar)+'</div></div><div class="scale" data-cat="'+cat.k+'">'+[1,2,3,4,5].map(n=>'<button type="button" class="'+(Number(ev.scores[cat.k])===n?'on':'')+'" data-act="score" data-n="'+n+'" title="'+SCALE[n]+'"'+(locked?' disabled':'')+'>'+n+'</button>').join('')+'</div>').join('')+'</div>'+
+      '<input class="fld" style="margin-top:10px" data-ev="comment" placeholder="Comment (required when any score is 5)" value="'+h(ev.comment)+'"'+(locked?' disabled':'')+'>'+
+      (locked?'':'<div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn sm" data-act="save-eval" data-emp="'+h(m.name)+'" data-role="'+m.role+'" data-shift="'+shiftId+'" data-date="'+key+'"'+(addedLater?' data-later="1"':'')+'>Save evaluation</button></div>')+'</div>';
+  }).join('');
+  if(!locked) html+='<div class="row" style="margin:4px 0 12px"><select class="fld" id="add-emp" style="width:auto;min-width:240px"><option value="">— pick employee —</option>'+staffUsers().filter(u=>!list.some(x=>x.name===u.name)).map(u=>'<option value="'+h(u.name)+'">'+h(u.name)+(u.empId?' · '+h(u.empId):'')+'</option>').join('')+'</select><select class="fld" id="add-emp-role" style="width:auto">'+['CT','RC'].map(r=>'<option value="'+r+'">'+ROLES[r]+'</option>').join('')+'</select><button class="btn o" data-act="add-emp" data-shift="'+shiftId+'" data-date="'+key+'">+ Add employee</button><span class="muted">for someone on the shift who didn\'t submit</span></div>';
+  return html;
+}
+function viewSupReport(){
+  const s=shiftOf(S.shift), key=S.shiftDate, mine=myReport();
+  let html=prevShiftBlock('SUP');
+  const subs=['CT','RC'].flatMap(role=>reportsFor(role,S.shift,key));
+  html+='<h2 class="sec">Submitted this shift <small>'+h(s.label)+' '+fmtDate(key)+' · read only</small></h2><div class="card"><div class="row">'+
+    (subs.length? subs.map(r=>'<button class="chip'+(S.open===r.id?' on':'')+'" data-act="open-sub" data-id="'+r.id+'">'+h(r.name)+' · '+r.role+' · '+fmtTime(r.submittedAt)+'</button>').join('') : '<span class="muted">Nobody yet.</span>')+'</div><div class="muted" style="margin-top:8px">Tap a name to open the report. Press Refresh if someone submits later.</div>'+
+    (S.open&&subs.find(r=>r.id===S.open)?'<div style="margin-top:10px">'+reportCard(subs.find(r=>r.id===S.open),{})+'</div>':'')+'</div>';
+  if(mine){
+    html+='<h2 class="sec">My shift report</h2><div class="okbox">Submitted '+fmtDT(mine.submittedAt)+'. Locked.</div>'+reportCard(mine,{canNote:true});
+    html+='<h2 class="sec">Staff evaluation <small>view only</small></h2>'+evalCards(S.shift,key,true,false);
+    return html;
+  }
+  const tm=S.targetMet;
+  html+='<h2 class="sec">Staff call numbers</h2><div class="card"><div class="row"><strong>Did all staff call numbers meet the target?</strong><button class="chip'+(tm===true?' on':'')+'" data-act="target" data-v="1">Yes</button><button class="chip'+(tm===false?' on':'')+'" data-act="target" data-v="0">No</button></div><div class="muted" style="margin-top:6px">Double-check the numbers in Smart Sheet before answering.</div>'+
+    (tm===false?'<div style="margin-top:10px"><label class="muted">Justification (required)</label><textarea class="fld" id="justif" placeholder="Why, and what was done">'+h(S.justif||'')+'</textarea></div>':'')+'</div>';
+  html+='<h2 class="sec">Evaluate staff <small>1 Below average · 2 Average · 3 Excellent · 4 Perfect · 5 Beyond job description</small></h2>'+evalCards(S.shift,key,false,false);
+  const list=evalList(S.shift,key), scored=list.filter(m=>evalsFor(S.shift,key).some(e=>e.employee===m.name));
+  const why = tm===undefined||tm===null ? 'Answer the target question' : (tm===false&&!(S.justif||'').trim()) ? 'Write the justification' : scored.length<list.length ? 'Evaluate all staff first — '+scored.length+' / '+list.length+' done' : '';
+  html+='<h2 class="sec">Notes for the next supervisor <small>optional</small></h2><textarea class="fld" id="rc-notes" placeholder="Anything to pass on">'+h(S.supNotes||'')+'</textarea>';
+  html+='<div class="row" style="margin-top:16px"><button class="btn" data-act="submit-report"'+(why?' disabled':'')+'>Submit shift report</button><span class="muted"'+(why?' style="color:var(--pend)"':'')+'>'+(why?h(why):'Locks the report. Evaluations are saved already.')+'</span></div>';
+  return html;
+}
+function viewPast(){
+  const today=DB.today||dateKey(new Date()); const sid=S.pastShift||'NIGHT'; const d=S.pastDate;
+  let html='<h2 class="sec">Evaluate a past shift <small>evaluation only — no numbers, no target question</small></h2><div class="card"><div class="row"><div class="chips">'+SHIFTS.map(x=>'<button class="chip'+(x.id===sid?' on':'')+'" data-act="past-shift" data-id="'+x.id+'">'+h(x.label)+'</button>').join('')+'</div><input class="fld" type="date" id="past-date" value="'+h(d||'')+'" max="'+today+'" style="width:auto"><span class="muted">any past date</span></div></div>';
+  if(!d) return html+'<div class="muted">Pick the shift and the date.</div>';
+  html+='<div class="muted" style="margin-bottom:10px">'+h(shiftOf(sid).label)+' '+fmtDate(d)+' — names who submitted that shift are listed; add the rest. Saved as "added later".</div>';
+  return html+evalCards(sid,d,false,true);
+}
+function viewDaily(){
+  const today=DB.today||dateKey(new Date()); const date=S.dailyDate||''; const cur=date?DB.d.daily.find(x=>x.date===date):null;
+  let html='<h2 class="sec">Daily Report <small>the 24-hour numbers for the manager — generated at 01:00 for the past day · once per date</small></h2>';
+  html+='<div class="card"><div class="row" style="margin-bottom:12px"><label class="l" style="margin:0">Report date</label><input class="fld" type="date" id="daily-date" value="'+h(date)+'"'+(canAnyDate()?'':' max="'+today+'"')+' style="width:auto">'+(date?(cur?'<span class="pill ok">Saved · locked</span>':'<span class="pill pend">Not filled yet</span>'):'<span class="muted">choose the date first</span>')+'</div>';
+  if(date&&cur){
+    html+='<div class="kv">'+DAILY_FIELDS.map(x=>'<div><div class="k">'+h(x.l)+'</div><div class="v'+(x.text?' txt':'')+'">'+h(cur.data[x.k])+'</div></div>').join('')+'</div>'+
+      '<div style="margin-top:10px;padding:9px 11px;background:var(--panel);border:1px solid var(--line);border-radius:8px"><span class="muted">Justification: </span>'+h(cur.justification||'—')+'<br><span class="muted">Ticket number: </span>'+h(cur.ticketNo||'0')+'</div>'+
+      '<div class="muted" style="margin-top:10px">Filled by '+h(cur.name)+' · '+fmtDT(cur.at)+' · locked.</div>'+
+      '<div class="row" style="margin-top:12px"><button class="btn" data-act="copy-daily" data-date="'+date+'">Copy for WhatsApp</button><span class="muted">pastes as the group message</span></div><textarea class="fld" id="wa-text" readonly style="margin-top:10px;min-height:230px;font-family:inherit">'+h(whatsapp(cur))+'</textarea>';
+  } else if(date){
+    html+='<div class="tw"><table><thead><tr><th>Item</th><th style="width:170px">Value</th></tr></thead><tbody>'+DAILY_FIELDS.map(x=>'<tr><td>'+h(x.l)+'</td><td>'+(x.text?'<input class="fld" data-d="'+x.k+'" placeholder="e.g. 2m46s">':'<input class="num" type="number" min="0" inputmode="decimal" step="any" data-d="'+x.k+'">')+'</td></tr>').join('')+'</tbody></table></div>'+
+      '<h2 class="sec">Justification for not meeting target <small>if applicable</small></h2><textarea class="fld" id="daily-just" placeholder="Leave empty if the target was met"></textarea>'+
+      '<h2 class="sec">Ticket number</h2><input class="fld" id="daily-ticket" placeholder="0 if none" style="width:200px">'+
+      '<div class="row" style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)"><button class="btn" data-act="save-daily">Save daily report</button><span class="muted">Saving locks this date.</span></div>';
+  }
+  html+='</div>';
+  const recent=DB.d.daily.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,14);
+  html+='<h2 class="sec">Last 14 saved</h2>'+tbl(['Date','Filled by'].concat(DAILY_FIELDS.map(x=>x.l),['Justification','Ticket']), recent.map(d=>['<button class="lnk2" data-act="daily-open" data-date="'+d.date+'">'+fmtDate(d.date)+'</button>',h(d.name)+'<div class="muted">'+fmtTime(d.at)+'</div>'].concat(DAILY_FIELDS.map(x=>'<span class="mono">'+h(d.data[x.k])+'</span>'),[h(d.justification),h(d.ticketNo)])));
+  return html;
+}
+function whatsapp(d){
+  const [y,m,dd]=d.date.split('-');
+  return '📊 Supervisor Daily Report\n'+dd+'-'+m+'-'+y+'\n\n🔹 Total Calls: '+d.data.totalCalls+'\n🔹 Abandoned Calls (>5 sec only): ['+d.data.abandoned+']\n🔹 Service Level: ['+d.data.serviceLevel+'%]\n🔹 Average Call Duration: ['+d.data.callDuration+']\n🔹 Average Pickup Time: ['+d.data.pickup+']\n\n📝 Justification for Not Meeting Target (if applicable):\n'+(d.justification||'—')+'\n\n🎫 Ticket Number ('+(d.ticketNo||'0')+')\n\nThank you';
+}
+
+/* ---- admin ---- */
+function tbl(cols, rows){ return '<div class="tw"><table><thead><tr>'+cols.map(c=>'<th>'+h(c)+'</th>').join('')+'</tr></thead><tbody>'+(rows.length? rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('') : '<tr><td colspan="'+cols.length+'" class="muted">Nothing yet.</td></tr>')+'</tbody></table></div>'; }
+function csv(cols, rows, name){ const esc=v=>'"'+String(v).replace(/<[^>]*>/g,'').replace(/"/g,'""')+'"'; const txt=[cols.map(esc).join(',')].concat(rows.map(r=>r.map(esc).join(','))).join('\n'); const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(txt); a.download=name+'.csv'; a.click(); }
+let ADMIN_CUR=null, ADMIN_CUR2=null;
+const inRange=(d,from,to)=>(!from||d>=from)&&(!to||d<=to);
+function adminRange(){ const today=DB.today||dateKey(new Date()); return { from:S.from||addDays(today,-30), to:S.to||today }; }
+const ADMIN_PAGES=[['shifts','Shift by shift','Who submitted each shift, their reports, the target answer, the evaluations'],['daily','Daily Report','The five daily numbers, justification, ticket'],['evaluation','Evaluation','Every score, and averages per person for a period'],['supeval','Evaluate supervisor','Nine categories, per shift'],['enter','Enter a report for someone','A forgotten staff report — pick the person, shift, date, numbers'],['users','Users & Setup','Reset passwords, activate / deactivate, shift times']];
+function attention(){
+  const today=DB.today||dateKey(new Date()); const wk=addDays(today,-7);
+  const noSup=[], notEval=[];
+  for(let d=wk; d<today; d=addDays(d,1)) SHIFTS.filter(x=>!x.overlap).forEach(x=>{
+    if(!reportsFor('SUP',x.id,d).length) noSup.push({shift:x.id,date:d});
+    ['CT','RC'].forEach(role=>reportsFor(role,x.id,d).forEach(r=>{ if(!evalsFor(x.id,d).some(e=>e.employee===r.name)) notEval.push(r); }));
+  });
+  const targetNo=R().filter(r=>r.role==='SUP'&&r.shiftDate>=wk&&!r.targetMet);
+  const dailyMiss=[]; for(let d=addDays(today,-3); d<today; d=addDays(d,1)) if(!DB.d.daily.some(x=>x.date===d)) dailyMiss.push(d);
+  return {noSup,notEval,targetNo,dailyMiss};
+}
+function viewAdmin(){
+  const back='<button class="back" data-act="admin-tab" data-t="home">← Home</button>';
+  if(!S.adminTab||S.adminTab==='home'){
+    const A=attention(); const box=(n,t,label)=>'<button class="abox'+(n?' bad':'')+'" data-act="admin-tab" data-t="'+t+'"><div class="k">'+label+'</div><div class="v">'+n+'</div></button>';
+    return '<div class="note"><b>Google Sheet connected</b> · last 60 days · loaded '+(DB.at?fmtDT(DB.at.toISOString()):'—')+'</div><h2 class="sec">Needs attention <small>last 7 days</small></h2><div class="kv" style="margin-bottom:6px">'+
+      box(A.noSup.length,'shifts','Shifts with no supervisor report')+box(A.targetNo.length,'shifts','Target "No"')+box(A.notEval.length,'shifts','Staff not evaluated')+box(A.dailyMiss.length,'daily','Daily Report missing · 3 days')+'</div>'+
+      '<h2 class="sec" style="margin-top:22px">Pages</h2><div class="menu">'+ADMIN_PAGES.map(pg=>big('warn','admin-tab',pg[0],pg[1],pg[2],'Open →')).join('')+'</div>';
+  }
+  const pg=ADMIN_PAGES.find(x=>x[0]===S.adminTab)||['',S.adminTab];
+  let html=back+'<h2 class="sec" style="margin-top:4px">'+h(pg[1])+'</h2>';
+  if(S.adminTab==='shifts')  html+=viewShiftByShift();
+  if(S.adminTab==='daily')   html+=viewDaily();
+  if(S.adminTab==='evaluation') html+=viewEvaluationAdmin();
+  if(S.adminTab==='supeval') html+=viewSupEval();
+  if(S.adminTab==='enter')   html+=viewEnterFor();
+  if(S.adminTab==='users')   html+=viewUsers();
+  return html+'<div style="margin-top:16px">'+back+'</div>';
+}
+function viewShiftByShift(){
+  const today=DB.today||dateKey(new Date()); const d=S.dayDate||today;
+  let html='<div class="row" style="margin-bottom:12px"><button class="lnk2" data-act="day-nav" data-n="-1">◀</button><input class="fld" type="date" id="day-date" value="'+d+'" style="width:auto"><button class="lnk2" data-act="day-nav" data-n="1">▶</button></div>';
+  SHIFTS.forEach(x=>{
+    const sup=reportsFor('SUP',x.id,d); const ev=evalsFor(x.id,d); const staff=['CT','RC'].flatMap(role=>reportsFor(role,x.id,d));
+    if(x.overlap&&!staff.length&&!sup.length) return;
+    html+='<div class="card"><div class="row" style="margin-bottom:8px"><strong>'+h(x.label)+' '+fmtDate(d)+'</strong>'+(sup.length?sup.map(r=>'<span class="pill ok">Supervisor: '+h(r.name)+' · '+fmtTime(r.submittedAt)+' · '+(r.targetMet?'Target met':'Target NOT met')+'</span>').join(''):'<span class="pill late">No supervisor report</span>')+'</div>';
+    html+=tbl(['Role','Name','Submitted','Numbers','Problems / notes','Evaluation','Comment'], staff.map(r=>{ const e=ev.find(z=>z.employee===r.name);
+      return [ROLES[r.role],h(r.name)+(r.enteredBy?' <span class="muted">(entered by '+h(r.enteredBy)+')</span>':''),fmtTime(r.submittedAt),'<span class="mono">'+FIELDS[r.role].map(f=>h(r.data[f.k])).join(' / ')+'</span>',h(r.notes||'')+(r.problems?r.problems.map(p=>h(p.problem)+' → '+h(p.action)).join('<br>'):''), e?'<span class="mono">'+EVAL_CATS.map(c=>h(e.scores[c.k])).join(' · ')+'</span>'+(e.addedLater?' <span class="muted">added later</span>':''):'<span class="muted">—</span>', e?h(e.comment):'']; }));
+    const extra=ev.filter(e=>!staff.some(r=>r.name===e.employee));
+    if(extra.length) html+='<div class="muted" style="margin-top:8px">Evaluated without a report: '+extra.map(e=>h(e.employee)+' ('+EVAL_CATS.map(c=>h(e.scores[c.k])).join('·')+')').join(' · ')+'</div>';
+    sup.forEach(r=>{ if(r.justification) html+='<div class="flag" style="margin-top:8px">Justification: '+h(r.justification)+'</div>'; if(r.notes) html+='<div class="muted" style="margin-top:6px">Supervisor notes: '+h(r.notes)+'</div>'; });
+    html+='</div>';
+  });
+  return html;
+}
+function evalSummary(who, from, to){
+  const cats=who==='sup'?SUP_EVAL_CATS:EVAL_CATS;
+  const src=who==='sup'? DB.d.supEvals.filter(e=>inRange(e.date,from,to)).map(e=>({name:e.supervisor,scores:e.scores,role:'SUP'})) : DB.d.evals.filter(e=>inRange(e.shiftDate,from,to)).map(e=>({name:e.employee,scores:e.scores,role:e.role}));
+  const by={}; src.forEach(e=>{ const o=by[e.name]=by[e.name]||{name:e.name,role:e.role,n:0,sum:{},cnt:{}}; o.n++; cats.forEach(c=>{ const v=Number(e.scores[c.k]); if(v){ o.sum[c.k]=(o.sum[c.k]||0)+v; o.cnt[c.k]=(o.cnt[c.k]||0)+1; } }); });
+  return Object.values(by).map(o=>{ const avg=cats.map(c=>o.cnt[c.k]?o.sum[c.k]/o.cnt[c.k]:null); const vals=avg.filter(v=>v!==null); return Object.assign(o,{avg, overall: vals.length? vals.reduce((a,b)=>a+b,0)/vals.length : null}); }).sort((a,b)=>a.name.localeCompare(b.name));
+}
+function rangeBar(){ const {from,to}=adminRange(); return '<div class="row" style="margin-bottom:8px"><span class="muted">From</span><input class="fld" type="date" data-range="from" value="'+from+'" style="width:auto"><span class="muted">to</span><input class="fld" type="date" data-range="to" value="'+to+'" style="width:auto"></div>'; }
+function viewEvaluationAdmin(){
+  const {from,to}=adminRange();
+  const cols=['Date','Shift','Supervisor','Employee','Role'].concat(EVAL_CATS.map(c=>c.ar),['Comment','Added later']);
+  const rows=DB.d.evals.filter(e=>inRange(e.shiftDate,from,to)).sort((a,b)=>b.shiftDate.localeCompare(a.shiftDate)).map(e=>[fmtDate(e.shiftDate),h(shiftOf(e.shift)?shiftOf(e.shift).label:e.shift),h(e.sup),h(e.employee),ROLES[e.role]||h(e.role)].concat(EVAL_CATS.map(c=>h(e.scores[c.k])),[h(e.comment),e.addedLater?'Yes':'']));
+  const cats=S.evalWho==='sup'?SUP_EVAL_CATS:EVAL_CATS;
+  const sumCols=['Name','Role','Shifts evaluated'].concat(cats.map(c=>c.ar),['Average']);
+  const sumRows=evalSummary(S.evalWho,from,to).map(o=>[h(o.name),ROLES[o.role]||'—','<span class="mono">'+o.n+'</span>'].concat(o.avg.map(v=>'<span class="mono">'+f1(v)+'</span>'),['<b class="mono">'+f1(o.overall)+'</b>']));
+  ADMIN_CUR={cols,rows}; ADMIN_CUR2={cols:sumCols,rows:sumRows};
+  return rangeBar()+'<h2 class="sec">Scores per shift</h2>'+tbl(cols,rows)+'<div class="row" style="margin-top:8px"><button class="btn o sm" data-act="export">Export CSV</button></div>'+
+    '<h2 class="sec" style="margin-top:22px">Summary <small>averages (means) per person, same period</small></h2><div class="row" style="margin-bottom:8px"><button class="chip'+(S.evalWho!=='sup'?' on':'')+'" data-act="evalwho" data-v="staff">Staff</button><button class="chip'+(S.evalWho==='sup'?' on':'')+'" data-act="evalwho" data-v="sup">Supervisors</button></div>'+tbl(sumCols,sumRows)+'<div class="row" style="margin-top:8px"><button class="btn o sm" data-act="export-2">Export summary CSV</button></div>';
+}
+function viewSupEval(){
+  const sups=DB.d.users.filter(u=>u.role==='SUP'&&u.active!==false); const today=DB.today||dateKey(new Date());
+  const se=S.supEval; if(!se.date) se.date=today; if(!se.shift) se.shift=(SHIFTS.find(x=>!x.overlap)||SHIFTS[0]).id;
+  const cur=se.name? DB.d.supEvals.find(e=>e.supervisor===se.name&&e.shift===se.shift&&e.date===se.date) : null;
+  let html='<div class="card"><div class="row" style="margin-bottom:12px"><select class="fld" data-se="name" style="min-width:240px;width:auto"><option value="">— pick supervisor —</option>'+sups.map(u=>'<option value="'+h(u.name)+'"'+(u.name===se.name?' selected':'')+'>'+h(u.name)+(u.empId?' · '+h(u.empId):'')+'</option>').join('')+'</select>'+
+    '<select class="fld" data-se="shift" style="width:auto">'+SHIFTS.map(x=>'<option value="'+x.id+'"'+(x.id===se.shift?' selected':'')+'>'+h(x.label)+'</option>').join('')+'</select><input class="fld" type="date" data-se="date" value="'+se.date+'" max="'+today+'" style="width:auto">'+
+    (se.name?(cur?'<span class="pill ok">Saved '+fmtDT(cur.at)+' by '+h(cur.by)+'</span>':'<span class="pill info">Not evaluated yet</span>'):'')+'</div>';
+  if(se.name){ const sc=cur?cur.scores:{};
+    html+='<div class="eval" id="supeval-grid">'+SUP_EVAL_CATS.map(cat=>'<div><div style="font-size:13px;font-weight:500">'+h(cat.ar)+'</div><span class="muted">'+h(cat.en)+'</span></div><div class="scale" data-cat="'+cat.k+'">'+[1,2,3,4,5].map(n=>'<button type="button" class="'+(Number(sc[cat.k])===n?'on':'')+'" data-act="score" data-n="'+n+'">'+n+'</button>').join('')+'</div>').join('')+'</div>'+
+      '<input class="fld" style="margin-top:10px" id="se-notes" placeholder="ملاحظات / Notes" value="'+h(cur?cur.notes:'')+'"><div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn" data-act="save-supeval">Save evaluation</button></div>';
+  } else html+='<div class="muted">Pick a supervisor to start.</div>';
+  html+='</div>';
+  const recent=DB.d.supEvals.slice().sort((a,b)=>(b.date+b.shift).localeCompare(a.date+a.shift)).slice(0,30);
+  ADMIN_CUR={cols:['Date','Shift','Supervisor'].concat(SUP_EVAL_CATS.map(c=>c.ar),['Notes','By']), rows:recent.map(e=>[fmtDate(e.date),e.shift,e.supervisor].concat(SUP_EVAL_CATS.map(c=>e.scores[c.k]||''),[e.notes,e.by]))};
+  return html+'<h2 class="sec">Recent supervisor evaluations</h2>'+tbl(['Date','Shift','Supervisor'].concat(SUP_EVAL_CATS.map(c=>c.ar),['ملاحظات','By']), recent.map(e=>[fmtDate(e.date),h(shiftOf(e.shift)?shiftOf(e.shift).label:e.shift),h(e.supervisor)].concat(SUP_EVAL_CATS.map(c=>h(e.scores[c.k]||'—')),[h(e.notes),h(e.by)])))+'<div class="row" style="margin-top:8px"><button class="btn o sm" data-act="export">Export CSV</button></div>';
+}
+function viewEnterFor(){
+  const e=S.enter; const today=DB.today||dateKey(new Date()); if(!e.shift) e.shift='DAY'; if(!e.date) e.date=addDays(today,-1);
+  const f=FIELDS[e.role];
+  return '<div class="card"><div class="muted" style="margin-bottom:10px">For a staff member who forgot to submit. Saved under their name, marked "entered by '+h(S.user.name)+'".</div>'+
+    '<div class="row" style="margin-bottom:12px"><select class="fld" data-en="name" style="min-width:240px;width:auto"><option value="">— pick employee —</option>'+staffUsers().map(u=>'<option value="'+h(u.name)+'"'+(u.name===e.name?' selected':'')+'>'+h(u.name)+(u.empId?' · '+h(u.empId):'')+'</option>').join('')+'</select>'+
+    '<select class="fld" data-en="role" style="width:auto">'+['CT','RC'].map(r=>'<option value="'+r+'"'+(e.role===r?' selected':'')+'>'+ROLES[r]+'</option>').join('')+'</select><select class="fld" data-en="shift" style="width:auto">'+SHIFTS.map(x=>'<option value="'+x.id+'"'+(x.id===e.shift?' selected':'')+'>'+h(x.label)+'</option>').join('')+'</select><input class="fld" type="date" data-en="date" value="'+e.date+'" style="width:auto"></div>'+
+    '<div class="tw"><table><thead><tr><th>Item</th><th style="width:140px">Count</th></tr></thead><tbody>'+f.map(x=>'<tr><td>'+h(x.l)+'</td><td><input class="num" type="number" min="0" data-f="'+x.k+'"></td></tr>').join('')+'</tbody></table></div>'+
+    (e.role==='CT'?'<h2 class="sec">Problems / notes</h2><div class="tw"><table id="probs"><thead><tr><th style="width:50%">Problem</th><th>Action</th></tr></thead><tbody><tr><td><input class="fld" data-p="problem"></td><td><input class="fld" data-p="action"></td></tr></tbody></table></div>':'<h2 class="sec">Notes</h2><textarea class="fld" id="rc-notes"></textarea>')+
+    '<div class="row" style="margin-top:16px"><button class="btn" data-act="enter-go">Save report for '+h(e.name||'…')+'</button></div></div>';
+}
+function viewUsers(){
+  const cols=['Name','Employee ID','Role','Password','Active',''];
+  const rows=DB.d.users.map(u=>{ const me=u.u===S.user.u;
+    const act = S.resetName===u.name ? '<div class="row"><span class="muted">Temporary password</span><input class="fld" id="reset-temp" value="1234" style="width:110px"><button class="btn sm" data-act="reset-go" data-name="'+h(u.name)+'">Confirm</button><button class="btn o sm" data-act="reset-cancel">Cancel</button></div>'
+      : '<div class="row"><button class="btn o sm" data-act="reset-pw" data-name="'+h(u.name)+'">Reset password</button>'+(me?'':(u.active?'<button class="btn danger sm" data-act="set-active" data-name="'+h(u.name)+'" data-v="0">Deactivate</button>':'<button class="btn o sm" data-act="set-active" data-name="'+h(u.name)+'" data-v="1">Activate</button>'))+'</div>';
+    return [h(u.name),'<span class="mono">'+h(u.empId||'—')+'</span>',(u.isSuper?'Super admin':ROLES[u.role]||h(u.role)), u.mustChange?'<span class="pill pend">TEMP — not changed yet</span>':(u.pwSet?'<span class="pill ok">Set</span>':'<span class="pill late">Empty</span>'), u.active?'<span class="pill ok">Active</span>':'<span class="pill late">Inactive</span>', act]; });
+  ADMIN_CUR={cols,rows};
+  const scols=['ID','Label','Start','End','Overlap','Previous shift','Next shift'];
+  const srows=SHIFTS.map(s=>[s.id,s.label,s.start,s.end,s.overlap?'Yes':'No',s.prev?shiftOf(s.prev.shift).label+(s.prev.offset?' (prev day)':''):'—',s.next?shiftOf(s.next.shift).label+(s.next.offset?' (next day)':''):'—']);
+  return '<div class="muted" style="margin-bottom:8px">Reset password writes a temporary password into the Setup sheet — the person must choose a new one at next sign-in. New people are added as a row in the Setup sheet (role STAFF, SUP, ADMIN or SUPER).</div>'+tbl(cols,rows)+
+    '<h2 class="sec" style="margin-top:22px">Shift times <small>read-only here — edit the Setup tab of the sheet</small></h2>'+tbl(scols,srows);
+}
+
+/* ---- actions ---- */
+async function doLogin(){
+  const uu=PICK.name||'', pp=($('#in-p')||{value:''}).value;
+  if(!uu){ toast('Pick your name first'); return; } if(!pp){ toast('Enter your password'); return; }
+  setBusy(true);
+  try{ const j=await api('login',{username:uu,password:pp});
+    S.user=j.user; S.token=j.token; S.mustChange=!!j.mustChange; S.shift=null; S.shiftDate=null; S.staffRole=null; S.view='home'; S.adminTab='home'; S.viewRole=null; S.rolePicked=false; applyConfig(j); saveSession();
+    if(j.data) applyData(j.data); setBusy(false); render(); if(!S.mustChange && !j.data) await reload();
+  }catch(e){ setBusy(false); toast(e.message); }
+}
+async function doChangePassword(){
+  const a=$('#np1').value, b=$('#np2').value;
+  if(a.length<4){ toast('Password too short'); return; } if(a!==b){ toast('Passwords do not match'); return; }
+  setBusy(true);
+  try{ const j=await api('changePassword',{newPassword:a}); S.token=j.token; S.mustChange=false; saveSession(); if(j.data) applyData(j.data); toast('Password saved'); setBusy(false); render(); if(!j.data) await reload(); }
+  catch(e){ setBusy(false); toast(e.message); }
+}
+function logout(){ STAFF._asked=false; PICK.name=null; PICK.empId=''; PICK.open=false; S.user=null; S.token=null; S.mustChange=false; S.shift=null; S.shiftDate=null; S.staffRole=null; S.viewRole=null; S.rolePicked=false; S.view='home'; DB.d={users:[],reports:[],evals:[],daily:[],supEvals:[]}; DB.at=null; saveSession(); render(); }
+function goHome(){ S.view='home'; S.open=null; saveSession(); render(); window.scrollTo(0,0); }
+
+document.addEventListener('keydown', e=>{ const k=e.target.dataset&&e.target.dataset.enter; if(e.key==='Enter'&&k){ e.preventDefault(); if(k==='login') doLogin(); if(k==='chpw') doChangePassword(); } });
+document.addEventListener('input', e=>{ if(e.target.id==='staff-q'){ PICK.q=e.target.value; const pos=e.target.selectionStart; render(); const q=$('#staff-q'); if(q){ q.focus(); q.setSelectionRange(pos,pos); } }
+  if(e.target.id==='justif') S.justif=e.target.value; if(e.target.id==='rc-notes'&&curRole()==='SUP') S.supNotes=e.target.value; });
+document.addEventListener('change', e=>{ const t=e.target;
+  if(t.id==='daily-date'){ S.dailyDate=t.value; render(); }
+  if(t.id==='past-date'){ S.pastDate=t.value; render(); }
+  if(t.id==='day-date'){ S.dayDate=t.value; render(); }
+  if(t.dataset&&t.dataset.range){ S[t.dataset.range]=t.value; render(); }
+  if(t.dataset&&t.dataset.se){ S.supEval[t.dataset.se]=t.value; render(); }
+  if(t.dataset&&t.dataset.en){ S.enter[t.dataset.en]=t.value; render(); }
+});
+document.addEventListener('click', e=>{
+  const el=e.target.closest('[data-act]'); if(!el||BUSY) return; const act=el.dataset.act; const D=el.dataset;
+  if(act==='login') doLogin();
+  if(act==='chpw') doChangePassword();
+  if(act==='logout') logout();
+  if(act==='refresh') reload();
+  if(act==='pick-name'){ PICK.open=!PICK.open; PICK.q=''; render(); if(PICK.open){ const q=$('#staff-q'); q&&q.focus(); } }
+  if(act==='choose-name'){ PICK.name=D.name; PICK.empId=D.emp; PICK.open=false; PICK.q=''; render(); const p=$('#in-p'); p&&p.focus(); }
+  if(act==='pick-role'){ S.viewRole=D.v||null; S.rolePicked=true; S.shift=null; S.shiftDate=null; S.staffRole=null; S.view='home'; S.adminTab='home'; saveSession(); reload(); }
+  if(act==='switch-role'){ S.rolePicked=false; S.viewRole=null; S.shift=null; S.shiftDate=null; S.staffRole=null; S.view='home'; saveSession(); render(); }
+  if(act==='staff-role'){ S.staffRole=D.r; S.shift=null; S.shiftDate=null; saveSession(); render(); }
+  if(act==='change-role'){ S.staffRole=null; S.shift=null; S.shiftDate=null; S.view='home'; saveSession(); render(); }
+  if(act==='change-shift'){ S.shift=null; S.shiftDate=null; S.open=null; saveSession(); render(); }
+  if(act==='pick-shift'){ S.pickShift=D.id; S.pickDate=null; render(); }
+  if(act==='pick-date'){ S.pickDate=D.d; render(); }
+  if(act==='pick-go'){ const sid=S.pickShift||suggestShift(new Date()); const base=currentShiftDate(shiftOf(sid),new Date()); const di=$('#pick-date'); let d=di?di.value:(S.pickDate||base); if(!d) d=base;
+    if(!canAnyDate() && [addDays(base,-1),base,addDays(base,1)].indexOf(d)<0) d=base;
+    S.shift=sid; S.shiftDate=d; S.pickShift=null; S.pickDate=null; S.open=null; S.targetMet=undefined; S.justif=''; S.supNotes=''; saveSession(); render(); }
+  if(act==='go-log'){ S.view='log'; S.open=null; S.showAll=false; saveSession(); render(); window.scrollTo(0,0); }
+  if(act==='go-home') goHome();
+  if(act==='open-log'){ S.open=S.open===D.id?null:D.id; render(); }
+  if(act==='log-all'){ S.showAll=true; render(); }
+  if(act==='open-sub'){ S.open=S.open===D.id?null:D.id; render(); }
+  if(act==='add-note'){ const inp=document.querySelector('[data-note="'+D.id+'"]'); const note=inp?inp.value.trim():''; if(!note){ toast('Write the note'); return; } write('addNote',{reportId:D.id,role:D.role,note},'Note added'); }
+  if(act==='add-prob'){ const tb=$('#probs tbody'); const tr=document.createElement('tr'); tr.innerHTML='<td><input class="fld" data-p="problem"></td><td><input class="fld" data-p="action"></td>'; tb.appendChild(tr); }
+  if(act==='submit-report') submitReport();
+  if(act==='sup-view'){ S.view=D.v; S.open=null; if(D.v==='home'){ S.open=null; } saveSession(); render(); window.scrollTo(0,0); }
+  if(act==='target'){ S.targetMet=D.v==='1'; render(); const j=$('#justif'); j&&j.focus(); }
+  if(act==='score'){ const sc=el.closest('.scale'); sc.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===el)); }
+  if(act==='save-eval'){ const card=el.closest('.card'); const scores={}; card.querySelectorAll('.scale').forEach(sc=>{ const on=sc.querySelector('button.on'); if(on) scores[sc.dataset.cat]=Number(on.dataset.n); });
+    if(Object.keys(scores).length<EVAL_CATS.length){ toast('Score all five categories'); return; }
+    const comment=card.querySelector('[data-ev=comment]').value.trim();
+    if(Object.values(scores).some(v=>v===5)&&!comment){ toast('A score of 5 needs a comment — what was beyond the job description?'); card.querySelector('[data-ev=comment]').focus(); return; }
+    write('saveEval',{shift:D.shift,shiftDate:D.date,employee:D.emp,role:D.role,scores,comment,addedLater:!!D.later},'Evaluation saved'); }
+  if(act==='add-emp'){ const n=$('#add-emp').value, r=$('#add-emp-role').value; if(!n){ toast('Pick the employee'); return; } S.extraNames=(S.extraNames||[]).concat([{name:n,role:r,shift:D.shift,date:D.date}]); render(); }
+  if(act==='past-shift'){ S.pastShift=D.id; render(); }
+  if(act==='save-daily') saveDaily();
+  if(act==='daily-open'){ S.dailyDate=D.date; render(); }
+  if(act==='copy-daily'){ const t=$('#wa-text'); if(t){ t.select(); try{ navigator.clipboard.writeText(t.value).then(()=>toast('Copied — paste it in WhatsApp')); }catch(e){ document.execCommand('copy'); toast('Copied'); } } }
+  if(act==='admin-tab'){ S.adminTab=D.t; saveSession(); render(); window.scrollTo(0,0); }
+  if(act==='day-nav'){ S.dayDate=addDays(S.dayDate||DB.today||dateKey(new Date()),Number(D.n)); render(); }
+  if(act==='evalwho'){ S.evalWho=D.v; render(); }
+  if(act==='export'){ if(ADMIN_CUR) csv(ADMIN_CUR.cols,ADMIN_CUR.rows,'tec_'+S.adminTab+'_'+dateKey(new Date())); }
+  if(act==='export-2'){ if(ADMIN_CUR2) csv(ADMIN_CUR2.cols,ADMIN_CUR2.rows,'tec_'+S.adminTab+'_summary_'+dateKey(new Date())); }
+  if(act==='save-supeval'){ const se=S.supEval; const scores={}; document.querySelectorAll('#supeval-grid .scale').forEach(sc=>{ const on=sc.querySelector('button.on'); if(on) scores[sc.dataset.cat]=Number(on.dataset.n); });
+    if(Object.keys(scores).length<SUP_EVAL_CATS.length){ toast('Score all nine categories'); return; }
+    write('saveSupEval',{supervisor:se.name,shift:se.shift,date:se.date,scores,notes:($('#se-notes')||{value:''}).value.trim()},'Supervisor evaluation saved'); }
+  if(act==='enter-go'){ const en=S.enter; if(!en.name){ toast('Pick the employee'); return; } const p=collectReport(en.role); if(!p) return; write('enterFor',Object.assign({name:en.name,role:en.role,shift:en.shift,shiftDate:en.date},p),'Report saved for '+en.name).then(j=>{ if(j){ S.enter={name:'',role:'CT',shift:'',date:''}; render(); } }); }
+  if(act==='reset-pw'){ S.resetName=D.name; render(); const i=$('#reset-temp'); i&&i.focus(); }
+  if(act==='reset-cancel'){ S.resetName=null; render(); }
+  if(act==='reset-go'){ const temp=($('#reset-temp')||{value:'1234'}).value.trim(); S.resetName=null; write('resetPassword',{name:D.name,temp},'Password reset — temporary: '+temp); }
+  if(act==='set-active'){ write('setActive',{name:D.name,active:D.v==='1'},D.v==='1'?'Activated':'Deactivated'); }
+});
+function collectReport(role){
+  const f=FIELDS[role]; const data={};
+  for(const x of f){ const inp=document.querySelector('[data-f="'+x.k+'"]'); const v=inp?inp.value.trim():''; if(v===''){ toast('Fill in: '+x.l); inp&&inp.focus(); return null; } data[x.k]=Number(v); }
+  const p={data};
+  if(role==='CT') p.problems=[...document.querySelectorAll('#probs tbody tr')].map(tr=>({problem:tr.querySelector('[data-p=problem]').value.trim(),action:tr.querySelector('[data-p=action]').value.trim()})).filter(pp=>pp.problem||pp.action);
+  else p.notes=($('#rc-notes')||{value:''}).value.trim();
+  return p;
+}
+async function submitReport(){
+  const role=myRole(); if(!role) return;
+  if(myReport()){ toast('You already submitted this shift'); render(); return; }
+  let p;
+  if(role==='SUP'){
+    if(S.targetMet!==true&&S.targetMet!==false){ toast('Answer the target question'); return; }
+    const j=($('#justif')||{value:S.justif||''}).value.trim(); if(S.targetMet===false&&!j){ toast('Write the justification'); return; }
+    p={role:'SUP',data:{},targetMet:S.targetMet,justification:j,notes:($('#rc-notes')||{value:''}).value.trim()};
+  } else { p=collectReport(role); if(!p) return; p.role=role; }
+  Object.assign(p,{shift:S.shift,shiftDate:S.shiftDate});
+  const j=await write('submit',p,'Report submitted');
+  if(j){ S.targetMet=undefined; S.justif=''; S.supNotes=''; S.view='log'; S.open=(j.report&&j.report.id)||null; saveSession(); render(); window.scrollTo(0,0); }
+}
+async function saveDaily(){
+  const date=($('#daily-date')||{value:''}).value; if(!date){ toast('Choose the date'); return; }
+  if(DB.d.daily.some(d=>d.date===date)){ toast('This date is already saved and locked'); S.dailyDate=date; render(); return; }
+  const data={}; for(const x of DAILY_FIELDS){ const inp=document.querySelector('[data-d="'+x.k+'"]'); const v=inp?inp.value.trim():''; if(v===''){ toast('Fill in: '+x.l); inp&&inp.focus(); return; } data[x.k]= x.text? v : Number(v); }
+  S.dailyDate=date;
+  write('saveDaily',{date,data,justification:($('#daily-just')||{value:''}).value.trim(),ticketNo:($('#daily-ticket')||{value:''}).value.trim()},'Daily report saved');
+}
+
+/* ---- init ---- */
+loadSession(); render();
+if(S.user && !S.mustChange) reload();
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && S.user && DB.at && (Date.now()-DB.at.getTime())>60000) reload(); });
+</script>
+</body>
+</html>
